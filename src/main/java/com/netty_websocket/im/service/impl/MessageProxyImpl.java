@@ -16,6 +16,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateFormatUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
@@ -24,11 +26,15 @@ import java.util.Date;
 public class MessageProxyImpl implements MessageProxy {
     private final static Logger log = LoggerFactory.getLogger(MessageProxyImpl.class);
 
+    @Autowired
+    private RedisTemplate redisTemplate;
+
     public MessageWrapper convertToMessageWrapper(String sessionId, MessageProto.Model message) {
 
         switch (message.getCmd()) {
             case Constants.CmdType.BIND:
                 try {
+
                     return new MessageWrapper(MessageWrapper.MessageProtocol.CONNECT, message.getSender(), null, message);
                 } catch (Exception e) {
                     e.printStackTrace();

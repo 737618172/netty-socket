@@ -1,15 +1,30 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <meta http-equiv="Access-Control-Allow-Origin" content="http://localhost:8010/">
     <meta charset="UTF-8">
     <title>Title</title>
 </head>
 <body>
+
 <!--<script src="protobuf.min.js"></script>-->
+<script type="text/javascript" src="https://cdn.bootcss.com/jquery/3.4.1/jquery.js"></script>
 <script type="text/javascript" src="./js/util.js"></script>
 <script type="text/javascript" src="./js/message.js?v=1"></script>
 <script type="text/javascript" src="./js/messagebody.js"></script>
 <script>
+    $(function () {
+
+        $.ajax({
+            type: "GET",
+            url: "http://localhost:8010/inPage",
+            dataType: 'json',
+            success: function(result) {
+                alert(result);
+            }
+        });
+        // alert(${session.cid});
+    })
 
     function httpPost(URL, PARAMS) {
         var temp = document.createElement("form");
