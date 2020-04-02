@@ -1,8 +1,8 @@
-package com.example.nettyspringboot.im;
+package com.netty_websocket.im;
 
-import com.example.nettyspringboot.im.model.MessageProto;
-import com.example.nettyspringboot.im.model.MessageWrapper;
-import com.example.nettyspringboot.im.service.MessageProxy;
+import com.netty_websocket.im.model.MessageProto;
+import com.netty_websocket.im.model.MessageWrapper;
+import com.netty_websocket.im.service.MessageProxy;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.channel.group.ChannelGroup;
@@ -10,10 +10,8 @@ import io.netty.channel.group.DefaultChannelGroup;
 import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
 import io.netty.handler.timeout.IdleStateEvent;
 import io.netty.util.concurrent.ImmediateEventExecutor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.text.SimpleDateFormat;
 import java.util.concurrent.ConcurrentHashMap;
 
 //public class WebSocketHandler extends SimpleChannelInboundHandler<TextWebSocketFrame> {

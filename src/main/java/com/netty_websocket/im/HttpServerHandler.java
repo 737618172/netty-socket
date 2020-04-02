@@ -1,4 +1,4 @@
-package com.example.nettyspringboot.im;
+package com.netty_websocket.im;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;

@@ -1,7 +1,7 @@
-package com.example.nettyspringboot.im;
+package com.netty_websocket.im;
 
-import com.example.nettyspringboot.im.model.MessageProto;
-import com.example.nettyspringboot.im.service.MessageProxy;
+import com.netty_websocket.im.model.MessageProto;
+import com.netty_websocket.im.service.MessageProxy;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
@@ -17,7 +17,6 @@ import io.netty.handler.codec.http.websocketx.extensions.compression.WebSocketSe
 import io.netty.handler.codec.protobuf.ProtobufDecoder;
 import io.netty.handler.stream.ChunkedWriteHandler;
 import io.netty.handler.timeout.IdleStateHandler;
-import org.springframework.stereotype.Component;
 
 import java.util.List;
 

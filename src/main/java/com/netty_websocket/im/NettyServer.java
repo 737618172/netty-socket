@@ -1,4 +1,4 @@
-package com.example.nettyspringboot.im;
+package com.netty_websocket.im;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;

@@ -4,12 +4,12 @@
  *  @License    http://www.apache.org/licenses/LICENSE-2.0
  ***************************************************************************************
  */
-package com.example.nettyspringboot.im.service.impl;
+package com.netty_websocket.im.service.impl;
 
-import com.example.nettyspringboot.im.Constants;
-import com.example.nettyspringboot.im.model.MessageWrapper;
-import com.example.nettyspringboot.im.service.ImConnertor;
-import com.example.nettyspringboot.im.service.MessageProxy;
+import com.netty_websocket.im.Constants;
+import com.netty_websocket.im.model.MessageWrapper;
+import com.netty_websocket.im.service.ImConnertor;
+import com.netty_websocket.im.service.MessageProxy;
 import com.example.nettyspringboot.im.service.Session;
 import com.qiqiim.constant.Constants;
 import com.qiqiim.server.exception.PushException;
@@ -20,14 +20,11 @@ import com.qiqiim.server.model.proto.MessageProto;
 import com.qiqiim.server.proxy.MessageProxy;
 import com.qiqiim.server.session.impl.SessionManagerImpl;
 import com.qiqiim.webserver.dwrmanage.DwrUtil;
-import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.List;
 
 public class ImConnertorImpl implements ImConnertor {
 	private final static Logger log = LoggerFactory.getLogger(ImConnertorImpl.class);

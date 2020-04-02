@@ -5,13 +5,13 @@
  * @License http://www.apache.org/licenses/LICENSE-2.0
  * **************************************************************************************
  */
-package com.example.nettyspringboot.im.service.impl;
+package com.netty_websocket.im.service.impl;
 
-import com.example.nettyspringboot.im.Constants;
-import com.example.nettyspringboot.im.model.MessageBodyProto;
-import com.example.nettyspringboot.im.model.MessageProto;
-import com.example.nettyspringboot.im.service.MessageProxy;
-import com.example.nettyspringboot.im.model.MessageWrapper;
+import com.netty_websocket.im.Constants;
+import com.netty_websocket.im.model.MessageBodyProto;
+import com.netty_websocket.im.model.MessageProto;
+import com.netty_websocket.im.service.MessageProxy;
+import com.netty_websocket.im.model.MessageWrapper;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateFormatUtils;
 import org.slf4j.Logger;

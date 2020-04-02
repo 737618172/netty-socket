@@ -1,4 +1,4 @@
-package com.example.nettyspringboot.im.controller;
+package com.netty_websocket.im.controller;
 
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;

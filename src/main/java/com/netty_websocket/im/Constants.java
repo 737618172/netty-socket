@@ -1,4 +1,4 @@
-package com.example.nettyspringboot.im;
+package com.netty_websocket.im;
 
 import com.googlecode.protobuf.format.JsonFormat;
 import io.netty.util.AttributeKey;

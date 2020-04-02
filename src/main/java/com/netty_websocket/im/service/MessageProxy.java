@@ -4,10 +4,10 @@
  *  @License    http://www.apache.org/licenses/LICENSE-2.0
  ***************************************************************************************
  */
-package com.example.nettyspringboot.im.service;
+package com.netty_websocket.im.service;
 
-import com.example.nettyspringboot.im.model.MessageProto;
-import com.example.nettyspringboot.im.model.MessageWrapper;
+import com.netty_websocket.im.model.MessageProto;
+import com.netty_websocket.im.model.MessageWrapper;
 
 public interface MessageProxy {
 

@@ -1,6 +1,6 @@
-package com.example.nettyspringboot.im;
+package com.netty_websocket.im;
 
-import com.example.nettyspringboot.im.service.MessageProxy;
+import com.netty_websocket.im.service.MessageProxy;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelOption;
@@ -8,7 +8,6 @@ import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 
 @Component

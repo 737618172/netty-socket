@@ -28,7 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package com.example.nettyspringboot.im.model;
+package com.netty_websocket.im.model;
 
 import java.io.Serializable;
 
