@@ -1,5 +1,5 @@
 syntax = "proto3";
-option java_package="com.example.nettyspringboot.im.service";
+option java_package="com.netty_websocket.im.model";
 option java_outer_classname="MessageProto";
 
 message Model {
@@ -18,5 +18,6 @@ message Model {
      string timeStamp = 13;//时间戳
      string sign = 14;//签名 
      bytes content = 15;//请求数据
+     uint32 utype = 16;//用户类型
 }
  

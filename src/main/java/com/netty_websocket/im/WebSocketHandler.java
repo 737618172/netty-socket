@@ -2,6 +2,7 @@ package com.netty_websocket.im;
 
 import com.netty_websocket.im.model.MessageProto;
 import com.netty_websocket.im.model.MessageWrapper;
+import com.netty_websocket.im.service.ImConnertor;
 import com.netty_websocket.im.service.MessageProxy;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
@@ -23,9 +24,11 @@ public class WebSocketHandler extends SimpleChannelInboundHandler<MessageProto.M
     public static ConcurrentHashMap<String,Object> USER_CLIENT = new ConcurrentHashMap<>();
 
     private MessageProxy messageProxy;
+    private ImConnertor connertor;
 
-    public WebSocketHandler(MessageProxy messageProxy){
+    public WebSocketHandler(MessageProxy messageProxy, ImConnertor connertor){
         this.messageProxy = messageProxy;
+        this.connertor = connertor;
     }
 
     @Override
@@ -76,18 +79,22 @@ public class WebSocketHandler extends SimpleChannelInboundHandler<MessageProto.M
         }
     }
 
-//    SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
     @Override
 //    protected void channelRead0(ChannelHandlerContext ctx, TextWebSocketFrame msg) throws Exception {
     protected void channelRead0(ChannelHandlerContext ctx, MessageProto.Model msg) throws Exception {
 
-        MessageWrapper messageWrapper = messageProxy.convertToMessageWrapper(null, msg);
+        String sessionId = ctx.channel().attr(Constants.SessionConfig.SERVER_SESSION_ID).get();
+        MessageWrapper messageWrapper = messageProxy.convertToMessageWrapper(sessionId, msg);
 
+        if(messageWrapper.isConnect()){
+            connertor.connect(ctx,messageWrapper);
+            if(Constants.UserType.CUSTOMER == msg.getUtype()){
 
-        System.out.println(ctx.channel().remoteAddress()+":"+ msg.getPlatform());
-//        JSONObject jsonObject = new JSONObject();
-//        jsonObject.put("content",msg.text());
-//        jsonObject.put("time", sdf.format(new Date()));
+            }else if(Constants.UserType.SERVICER == msg.getUtype()){
+
+            }
+        }
+
         ctx.writeAndFlush(new TextWebSocketFrame("服务器接收到消息  " + msg));
     }
 }

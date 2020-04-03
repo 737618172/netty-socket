@@ -68,6 +68,11 @@ public class Constants {
     	 byte REPLY = 4; //回复
 	}
 
+	public static interface UserType{
+		byte CUSTOMER = 1; //客户
+		byte SERVER = 2; //客服
+	}
+
     public static interface CmdType{
 	   	 byte BIND = 1; //绑定
 	   	 byte HEARTBEAT = 2; //心跳

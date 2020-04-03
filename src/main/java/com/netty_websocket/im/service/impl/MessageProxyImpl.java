@@ -12,6 +12,7 @@ import com.netty_websocket.im.model.MessageBodyProto;
 import com.netty_websocket.im.model.MessageProto;
 import com.netty_websocket.im.service.MessageProxy;
 import com.netty_websocket.im.model.MessageWrapper;
+import io.netty.channel.ChannelHandlerContext;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateFormatUtils;
 import org.slf4j.Logger;
@@ -21,6 +22,8 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
+import java.util.Iterator;
+import java.util.Set;
 
 @Service
 public class MessageProxyImpl implements MessageProxy {
@@ -33,7 +36,23 @@ public class MessageProxyImpl implements MessageProxy {
 
         switch (message.getCmd()) {
             case Constants.CmdType.BIND:
+                //  设置通道session
+//                ctx.channel().attr(Constants.SessionConfig.SERVER_SESSION_ID).set(message.getSender());
+//
+//                if(Constants.UserType.SERVICER == message.getUtype()){
+//
+//                }else if (Constants.UserType.SERVICER == message.getUtype()){
+//                    redisTemplate.opsForSet().add("servicer",message.get);
+//                }
                 try {
+//                    Set members = redisTemplate.opsForSet().members("10891");
+//                    if(members!=null && members.size()>0){
+//                        Iterator iterator = members.iterator();
+//                        while(iterator.hasNext()){
+//
+//                        }
+//
+//                    }
 
                     return new MessageWrapper(MessageWrapper.MessageProtocol.CONNECT, message.getSender(), null, message);
                 } catch (Exception e) {

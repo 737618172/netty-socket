@@ -1,6 +1,7 @@
 package com.netty_websocket.im;
 
 import com.netty_websocket.im.model.MessageProto;
+import com.netty_websocket.im.service.ImConnertor;
 import com.netty_websocket.im.service.MessageProxy;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
@@ -26,9 +27,11 @@ public class SocketChannelInitializer extends ChannelInitializer {
     private ProtobufDecoder decoder = new ProtobufDecoder(MessageProto.Model.getDefaultInstance());
 
     private MessageProxy messageProxy;
+    private ImConnertor connertor;
 
-    public SocketChannelInitializer(MessageProxy messageProxy){
+    public SocketChannelInitializer(MessageProxy messageProxy, ImConnertor connertor){
         this.messageProxy = messageProxy;
+        this.connertor = connertor;
     }
 
     @Override
@@ -56,6 +59,6 @@ public class SocketChannelInitializer extends ChannelInitializer {
 
         pipeline.addLast(decoder);
         pipeline.addLast(new IdleStateHandler(30,30,60 * 30));
-        pipeline.addLast(new WebSocketHandler(messageProxy));
+        pipeline.addLast(new WebSocketHandler(messageProxy,connertor));
     }
 }
