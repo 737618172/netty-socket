@@ -1,9 +1,3 @@
-/**
- ***************************************************************************************
- *  @Author     1044053532@qq.com   
- *  @License    http://www.apache.org/licenses/LICENSE-2.0
- ***************************************************************************************
- */
 package com.netty_websocket.im.service;
 
 import io.netty.channel.Channel;
@@ -13,11 +7,6 @@ import io.netty.channel.group.ChannelMatcher;
 import io.netty.channel.group.DefaultChannelGroup;
 import io.netty.util.concurrent.GlobalEventExecutor;
 
-/**
- * Im广播组
- * 用于推送全员信息及系统消息 或断开所有用户连接
- *
- */
 public class ImChannelGroup {
 	 
     private static final ChannelGroup CHANNELGROUP = new DefaultChannelGroup("ChannelGroup", GlobalEventExecutor.INSTANCE);

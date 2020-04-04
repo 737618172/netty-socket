@@ -1,4 +1,4 @@
-package com.netty_websocket.im.service;
+package com.netty_websocket.im.model;
 
 import io.netty.channel.Channel;
 import io.netty.util.AttributeKey;
@@ -11,7 +11,6 @@ import java.net.UnknownHostException;
 
 @Data
 public class Session   implements Serializable{
-
 
 	/**
 	 *
@@ -34,6 +33,7 @@ public class Session   implements Serializable{
 	private Double latitude;//维度
 	private String location;//位置
 	private int status;// 状态
+	private int count;
 
 
 	public Long getUpdateTime() {

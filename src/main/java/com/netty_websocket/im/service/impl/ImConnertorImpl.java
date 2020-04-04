@@ -1,9 +1,3 @@
-/**
- ***************************************************************************************
- *  @Author     1044053532@qq.com
- *  @License    http://www.apache.org/licenses/LICENSE-2.0
- ***************************************************************************************
- */
 package com.netty_websocket.im.service.impl;
 
 import com.netty_websocket.im.Constants;
@@ -11,7 +5,7 @@ import com.netty_websocket.im.model.MessageProto;
 import com.netty_websocket.im.model.MessageWrapper;
 import com.netty_websocket.im.service.ImConnertor;
 import com.netty_websocket.im.service.MessageProxy;
-import com.netty_websocket.im.service.Session;
+import com.netty_websocket.im.model.Session;
 import io.netty.channel.ChannelHandlerContext;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -108,13 +102,6 @@ public class ImConnertorImpl implements ImConnertor {
                   Session session = sessionManager.createSession(wrapper, ctx);
                   setChannelSessionId(ctx, sessionId);
                   log.info("create channel attr sessionId " + sessionId + " successful, ctx -> " + ctx.toString());
-
-                  MessageProto.Model body = (MessageProto.Model) wrapper.getBody();
-                  if(Constants.UserType.CUSTOMER == body.getUtype()){
-                      session.setTSession(sessionManager.getServer());
-                  }else if (Constants.UserType.SERVER == body.getUtype()){
-                      sessionManager.serverSession(session);
-                  }
               }
 
         } catch (Exception e) {

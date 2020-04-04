@@ -1,63 +1,76 @@
-/**
- ***************************************************************************************
- *  @Author     1044053532@qq.com   
- *  @License    http://www.apache.org/licenses/LICENSE-2.0
- ***************************************************************************************
- */
 package com.netty_websocket.im.service.impl;
 
+import com.google.protobuf.ByteString;
 import com.netty_websocket.im.Constants;
 import com.netty_websocket.im.model.MessageProto;
 import com.netty_websocket.im.model.MessageWrapper;
+import com.netty_websocket.im.model.Session;
 import com.netty_websocket.im.service.MessageProxy;
-import com.netty_websocket.im.service.Session;
 import com.netty_websocket.im.service.SessionManager;
-import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 @Service
 public class SessionManagerImpl implements SessionManager {
 
     private final static Logger log = LoggerFactory.getLogger(SessionManagerImpl.class);
+    @Autowired
     private MessageProxy proxy;
+
+    @Autowired
+    private RedisTemplate redisTemplate;
     
-    public void setProxy(MessageProxy proxy) {
-		this.proxy = proxy;
-	}
     /**
      * The set of currently active Sessions for this Manager, keyed by session
      * identifier.
      */
     protected Map<String, Session> sessions = new ConcurrentHashMap<String, Session>();
 
-    protected Map<Long, Map<String,Session>> serverSessions = new ConcurrentHashMap<Long, Map<String,Session>>();
+    protected Map<String,Session> serverSessions = new ConcurrentHashMap<String,Session>();
 
 
 
-    public synchronized void addSession(Session session) {
+    public synchronized void addSession(Session session,int type) {
         if (null == session) {
             return;
-        } 
-        sessions.put(session.getAccount(), session);
-//        if(session.getSource()!= Constants.ImserverConfig.DWR){
-//        	ImChannelGroup.add(session.getSession());
-//        }
-        //全员发送上线消息
-//        MessageProto.Model model = proxy.getOnLineStateMsg(session.getAccount());
-//        ImChannelGroup.broadcast(model);
+        }
+        if(1 == type){
+            sessions.put(session.getAccount(), session);
+        }else if(2==type){
+            serverSessions.put(session.getAccount(), session);
+        }
         log.debug("put a session " + session.getAccount() + " to sessions!");
         log.debug("session size " + sessions.size() );
     }
 
-    public synchronized void updateSession(Session session) {
+    public synchronized void updateSession(Session session,int type) {
         session.setUpdateTime(System.currentTimeMillis());
-        sessions.put(session.getAccount(), session);
+        if(1 == type){
+            sessions.put(session.getAccount(), session);
+        }else if(2 == type){
+            serverSessions.put(session.getAccount(), session);
+        }
+    }
+
+    public synchronized void updateSessionConCount(Session session, int utype, int count) {
+        session.setUpdateTime(System.currentTimeMillis());
+        session.setCount(session.getCount() + count);
+        if(1 == utype){
+            sessions.put(session.getAccount(), session);
+        }else if(2 == utype){
+            serverSessions.put(session.getAccount(), session);
+        }
     }
 
     /**
@@ -134,22 +147,34 @@ public class SessionManagerImpl implements SessionManager {
     public  Session createSession(MessageWrapper wrapper, ChannelHandlerContext ctx) {
     	String sessionId = wrapper.getSessionId();
         Session session = sessions.get(sessionId);
-        if (session != null) {
+        Session session1 = serverSessions.get(sessionId);
+        MessageProto.Model body = (MessageProto.Model) wrapper.getBody();
+        int utype = body.getUtype();
+        if (session != null || session1 != null) {
         	log.info("session " + sessionId + " exist!");
             //用于解决websocket多开页面session被踢下线的问题
             Session  newsession = setSessionContent(ctx,wrapper,sessionId);
-            updateSession(session);
-//            ImChannelGroup.add(newsession.getSession());
+            updateSession(session,utype);
             log.info("session " + sessionId + " update!");
             return newsession;
         }
 
         session = setSessionContent(ctx,wrapper,sessionId);
-        addSession(session);
+        if(1 == utype){//为客户分配客服
+            List<Session> collect = serverSessions.values().stream().sorted(Comparator.comparing(Session::getCount)).collect(Collectors.toList());
+            Session session2 = collect.get(0);
+            session.setTSession(session2.getSession());
+            updateSessionConCount(session2,utype,1);
+
+            MessageProto.Model.Builder builder = MessageProto.Model.newBuilder();
+            builder.setCmd(Constants.CmdType.BIND);
+            builder.setContent(ByteString.copyFromUtf8("客服" + session2.getAccount() + "为您服务"));
+            session.getSession().writeAndFlush(builder);
+        }
+        addSession(session,utype);
         return session;
     }
-    
-    
+
     /**
      * 设置session内容
      * @param ctx
@@ -178,28 +203,6 @@ public class SessionManagerImpl implements SessionManager {
 	@Override
 	public boolean exist(String sessionId) {
         Session session = getSession(sessionId);
-        return session != null ? true : false;
+        return session != null ;
 	}
-
-    public void serverSession(Session session) {
-        if(null != session){
-            Map<String, Session> sessions = serverSessions.get(1089L);
-            if(null == sessions){
-                Map<String, Session> m = new HashMap<>();
-                m.put(session.getAccount(),session);
-                serverSessions.put(1089L,m);
-            }
-        }
-    }
-
-    public Channel getServer() {
-        Map<String, Session> servers = serverSessions.get(1089L);
-        int i1 = new Random().nextInt(servers.size());
-        for(int i = 0;i<servers.size();i++){
-            if(i == i1){
-                Set<String> strings = servers.keySet();
-                return
-            }
-        }
-    }
 }

@@ -2,6 +2,7 @@ package com.netty_websocket.im;
 
 import com.netty_websocket.im.model.MessageProto;
 import com.netty_websocket.im.model.MessageWrapper;
+import com.netty_websocket.im.model.Session;
 import com.netty_websocket.im.service.ImConnertor;
 import com.netty_websocket.im.service.MessageProxy;
 import io.netty.channel.ChannelHandlerContext;
@@ -13,7 +14,10 @@ import io.netty.handler.timeout.IdleStateEvent;
 import io.netty.util.concurrent.ImmediateEventExecutor;
 import org.springframework.stereotype.Component;
 
+import java.util.Comparator;
+import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 //public class WebSocketHandler extends SimpleChannelInboundHandler<TextWebSocketFrame> {
 
@@ -88,13 +92,6 @@ public class WebSocketHandler extends SimpleChannelInboundHandler<MessageProto.M
 
         if(messageWrapper.isConnect()){
             connertor.connect(ctx,messageWrapper);
-            if(Constants.UserType.CUSTOMER == msg.getUtype()){
-
-            }else if(Constants.UserType.SERVICER == msg.getUtype()){
-
-            }
         }
-
-        ctx.writeAndFlush(new TextWebSocketFrame("服务器接收到消息  " + msg));
     }
 }

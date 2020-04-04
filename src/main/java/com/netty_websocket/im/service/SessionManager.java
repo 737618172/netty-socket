@@ -1,14 +1,8 @@
-/**
- ***************************************************************************************
- *  @Author     1044053532@qq.com   
- *  @License    http://www.apache.org/licenses/LICENSE-2.0
- ***************************************************************************************
- */
 package com.netty_websocket.im.service;
 
 import com.netty_websocket.im.model.MessageWrapper;
+import com.netty_websocket.im.model.Session;
 import io.netty.channel.ChannelHandlerContext;
-import org.springframework.stereotype.Service;
 
 import java.util.Set;
 
@@ -19,9 +13,11 @@ public interface SessionManager {
      *
      * @param session
      */
-    void addSession(Session session);
+    void addSession(Session session,int type);
 
-    void updateSession(Session session);
+    void updateSession(Session session,int type);
+
+    void updateSessionConCount(Session session,int type,int count);
  
 
     /**
