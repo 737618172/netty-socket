@@ -8,7 +8,7 @@ message Model {
      uint32 cmd = 3;//请求接口命令字  1绑定  2心跳   3上线   4下线 
      string sender = 4;//发送人
      string receiver = 5;//接收人
-     string groupId =6;//用户组编号
+     string name =6;//客户，客服名称
      uint32 msgtype = 7;//请求1，应答2，通知3，响应4  format
      uint32 flag = 8;//1 rsa加密 2aes加密
      string platform = 9;//mobile-ios mobile-android pc-windows pc-mac

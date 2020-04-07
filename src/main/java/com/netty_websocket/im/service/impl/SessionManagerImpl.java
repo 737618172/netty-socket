@@ -40,7 +40,7 @@ public class SessionManagerImpl implements SessionManager {
     protected Map<String,Session> serverSessions = new ConcurrentHashMap<String,Session>();
 
 
-
+    @Override
     public synchronized void addSession(Session session,int type) {
         if (null == session) {
             return;
@@ -54,6 +54,7 @@ public class SessionManagerImpl implements SessionManager {
         log.debug("session size " + sessions.size() );
     }
 
+    @Override
     public synchronized void updateSession(Session session,int type) {
         session.setUpdateTime(System.currentTimeMillis());
         if(1 == type){
@@ -63,6 +64,7 @@ public class SessionManagerImpl implements SessionManager {
         }
     }
 
+    @Override
     public synchronized void updateSessionConCount(Session session, int utype, int count) {
         session.setUpdateTime(System.currentTimeMillis());
         session.setCount(session.getCount() + count);
@@ -76,6 +78,7 @@ public class SessionManagerImpl implements SessionManager {
     /**
      * Remove this Session from the active Sessions for this Manager.
      */
+    @Override
     public synchronized void removeSession(String sessionId) {
 //    	try{
 //    		Session session = getSession(sessionId);
@@ -92,8 +95,8 @@ public class SessionManagerImpl implements SessionManager {
 //    	log.debug("session size " + sessions.size() );
 //    	log.info("system remove the session " + sessionId + " from sessions!");
     }
-    
-    
+
+    @Override
     public synchronized void removeSession(String sessionId,String nid) {
 //    	try{
 //    		Session session = getSession(sessionId);
@@ -125,19 +128,19 @@ public class SessionManagerImpl implements SessionManager {
 //    	}
 //        log.info("remove the session " + sessionId + " from sessions!");
     }
-
+    @Override
     public Session getSession(String sessionId) {
         return sessions.get(sessionId);
     }
-
+    @Override
     public Session[] getSessions() {
         return sessions.values().toArray(new Session[0]);
     }
-
+    @Override
     public Set<String> getSessionKeys() {
         return sessions.keySet();
     }
-
+    @Override
     public int getSessionCount() {
         return sessions.size();
     }
@@ -166,10 +169,10 @@ public class SessionManagerImpl implements SessionManager {
             session.setTSession(session2.getSession());
             updateSessionConCount(session2,utype,1);
 
-            MessageProto.Model.Builder builder = MessageProto.Model.newBuilder();
-            builder.setCmd(Constants.CmdType.BIND);
-            builder.setContent(ByteString.copyFromUtf8("客服" + session2.getAccount() + "为您服务"));
-            session.getSession().writeAndFlush(builder);
+            MessageProto.Model onLineStateMsg = proxy.getCustomerConnMsg(session.getAccount());
+            session2.getSession().writeAndFlush(onLineStateMsg);
+            MessageProto.Model serverConnMsg = proxy.getServerConnMsg(session2.getAccount());
+            session.getSession().writeAndFlush(serverConnMsg);
         }
         addSession(session,utype);
         return session;

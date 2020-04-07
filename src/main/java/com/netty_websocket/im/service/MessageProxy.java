@@ -7,5 +7,11 @@ import io.netty.channel.ChannelHandlerContext;
 public interface MessageProxy {
 
     MessageWrapper convertToMessageWrapper(String ctx, MessageProto.Model message);
+
+    MessageProto.Model  getOnLineStateMsg(String sessionId);
+
+    MessageProto.Model getCustomerConnMsg(String cusSessionId);
+
+    MessageProto.Model getServerConnMsg(String serSessionId);
 }
 

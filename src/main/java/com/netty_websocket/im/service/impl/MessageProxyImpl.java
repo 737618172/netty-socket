@@ -25,6 +25,7 @@ public class MessageProxyImpl implements MessageProxy {
     @Autowired
     private RedisTemplate redisTemplate;
 
+    @Override
     public MessageWrapper convertToMessageWrapper(String sessionId, MessageProto.Model message) {
 
         switch (message.getCmd()) {
@@ -81,9 +82,7 @@ public class MessageProxyImpl implements MessageProxy {
                         } else {
                             return new MessageWrapper(MessageWrapper.MessageProtocol.REPLY, sessionId, message.getReceiver(), message);
                         }
-                    } else if (StringUtils.isNotEmpty(message.getGroupId())) {
-                        return new MessageWrapper(MessageWrapper.MessageProtocol.GROUP, sessionId, null, message);
-                    } else {
+                    }  else {
                         return new MessageWrapper(MessageWrapper.MessageProtocol.SEND, sessionId, null, message);
                     }
                 } catch (Exception e) {
@@ -92,5 +91,32 @@ public class MessageProxyImpl implements MessageProxy {
                 break;
         }
         return null;
+    }
+
+    @Override
+    public MessageProto.Model getOnLineStateMsg(String sessionId) {
+        MessageProto.Model.Builder  result = MessageProto.Model.newBuilder();
+        result.setTimeStamp(DateFormatUtils.format(new Date(), "yyyy-MM-dd HH:mm:ss"));
+        result.setSender(sessionId);//存入发送人sessionId
+        result.setCmd(Constants.CmdType.ONLINE);
+        return result.build();
+    }
+
+    @Override
+    public MessageProto.Model getCustomerConnMsg(String cusSessionId ) {
+        MessageProto.Model.Builder  result = MessageProto.Model.newBuilder();
+        result.setTimeStamp(DateFormatUtils.format(new Date(), "yyyy-MM-dd HH:mm:ss"));
+        result.setSender(cusSessionId);//存入发送人sessionId
+        result.setCmd(Constants.CmdType.ONLINE);
+        return result.build();
+    }
+
+    @Override
+    public MessageProto.Model getServerConnMsg(String serSessionId ) {
+        MessageProto.Model.Builder  result = MessageProto.Model.newBuilder();
+        result.setTimeStamp(DateFormatUtils.format(new Date(), "yyyy-MM-dd HH:mm:ss"));
+        result.setSender(serSessionId);//存入发送人sessionId
+        result.setCmd(Constants.CmdType.ONLINE);
+        return result.build();
     }
 }
