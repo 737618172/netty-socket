@@ -1,5 +1,7 @@
 package com.netty_websocket.im;
 
+import com.google.protobuf.MessageLite;
+import com.google.protobuf.MessageLiteOrBuilder;
 import com.netty_websocket.im.model.MessageProto;
 import com.netty_websocket.im.service.ImConnertor;
 import com.netty_websocket.im.service.MessageProxy;
@@ -9,6 +11,7 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
 import io.netty.handler.codec.MessageToMessageDecoder;
+import io.netty.handler.codec.MessageToMessageEncoder;
 import io.netty.handler.codec.http.HttpObjectAggregator;
 import io.netty.handler.codec.http.HttpServerCodec;
 import io.netty.handler.codec.http.websocketx.BinaryWebSocketFrame;
@@ -20,6 +23,8 @@ import io.netty.handler.stream.ChunkedWriteHandler;
 import io.netty.handler.timeout.IdleStateHandler;
 
 import java.util.List;
+
+import static io.netty.buffer.Unpooled.wrappedBuffer;
 
 
 public class SocketChannelInitializer extends ChannelInitializer {
@@ -56,7 +61,22 @@ public class SocketChannelInitializer extends ChannelInitializer {
                 buf.retain();
             }
         });
-
+        // 协议包编码
+        pipeline.addLast(new MessageToMessageEncoder<MessageLiteOrBuilder>() {
+            @Override
+            protected void encode(ChannelHandlerContext ctx, MessageLiteOrBuilder msg, List<Object> out) throws Exception {
+                ByteBuf result = null;
+                if (msg instanceof MessageLite) {
+                    result = wrappedBuffer(((MessageLite) msg).toByteArray());
+                }
+                if (msg instanceof MessageLite.Builder) {
+                    result = wrappedBuffer(((MessageLite.Builder) msg).build().toByteArray());
+                }
+                // 然后下面再转成websocket二进制流，因为客户端不能直接解析protobuf编码生成的
+                WebSocketFrame frame = new BinaryWebSocketFrame(result);
+                out.add(frame);
+            }
+        });
         pipeline.addLast(decoder);
         pipeline.addLast(new IdleStateHandler(30,30,60 * 30));
         pipeline.addLast(new WebSocketHandler(messageProxy,connertor));

@@ -8,6 +8,7 @@ import com.netty_websocket.im.model.Session;
 import com.netty_websocket.im.service.MessageProxy;
 import com.netty_websocket.im.service.SessionManager;
 import io.netty.channel.ChannelHandlerContext;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -130,7 +131,11 @@ public class SessionManagerImpl implements SessionManager {
     }
     @Override
     public Session getSession(String sessionId) {
-        return sessions.get(sessionId);
+        Session session = sessions.get(sessionId);
+        if(null == session){
+            session = serverSessions.get(sessionId);
+        }
+        return session;
     }
     @Override
     public Session[] getSessions() {
@@ -157,7 +162,7 @@ public class SessionManagerImpl implements SessionManager {
         	log.info("session " + sessionId + " exist!");
             //用于解决websocket多开页面session被踢下线的问题
             Session  newsession = setSessionContent(ctx,wrapper,sessionId);
-            updateSession(session,utype);
+            updateSession(newsession,utype);
             log.info("session " + sessionId + " update!");
             return newsession;
         }
@@ -173,6 +178,7 @@ public class SessionManagerImpl implements SessionManager {
             session2.getSession().writeAndFlush(onLineStateMsg);
             MessageProto.Model serverConnMsg = proxy.getServerConnMsg(session2.getAccount());
             session.getSession().writeAndFlush(serverConnMsg);
+            log.info("为客服分配客户"+ session.getAccount());
         }
         addSession(session,utype);
         return session;

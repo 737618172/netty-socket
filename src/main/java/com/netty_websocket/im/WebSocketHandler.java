@@ -92,6 +92,13 @@ public class WebSocketHandler extends SimpleChannelInboundHandler<MessageProto.M
 
         if(messageWrapper.isConnect()){
             connertor.connect(ctx,messageWrapper);
+        }else if(messageWrapper.isClose()){
+        }else if(messageWrapper.isSend()){
+
+        }else if(messageWrapper.isHeartbeat()){
+
+        }else if(messageWrapper.isReply()){
+
         }
     }
 }

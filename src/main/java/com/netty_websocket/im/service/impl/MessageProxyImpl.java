@@ -1,10 +1,13 @@
 package com.netty_websocket.im.service.impl;
 
+import com.google.protobuf.ByteString;
 import com.netty_websocket.im.Constants;
 import com.netty_websocket.im.model.MessageBodyProto;
 import com.netty_websocket.im.model.MessageProto;
+import com.netty_websocket.im.model.Session;
 import com.netty_websocket.im.service.MessageProxy;
 import com.netty_websocket.im.model.MessageWrapper;
+import com.netty_websocket.im.service.SessionManager;
 import io.netty.channel.ChannelHandlerContext;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateFormatUtils;
@@ -24,6 +27,9 @@ public class MessageProxyImpl implements MessageProxy {
 
     @Autowired
     private RedisTemplate redisTemplate;
+
+    @Autowired
+    private SessionManager sessionManager;
 
     @Override
     public MessageWrapper convertToMessageWrapper(String sessionId, MessageProto.Model message) {
@@ -107,7 +113,12 @@ public class MessageProxyImpl implements MessageProxy {
         MessageProto.Model.Builder  result = MessageProto.Model.newBuilder();
         result.setTimeStamp(DateFormatUtils.format(new Date(), "yyyy-MM-dd HH:mm:ss"));
         result.setSender(cusSessionId);//存入发送人sessionId
-        result.setCmd(Constants.CmdType.ONLINE);
+        result.setCmd(Constants.CmdType.BIND);
+
+        MessageBodyProto.MessageBody.Builder  msgbody =  MessageBodyProto.MessageBody.newBuilder();
+        msgbody.setContent("客户"+cusSessionId+"已连接");
+        result.setContent(msgbody.build().toByteString());
+
         return result.build();
     }
 
@@ -116,7 +127,11 @@ public class MessageProxyImpl implements MessageProxy {
         MessageProto.Model.Builder  result = MessageProto.Model.newBuilder();
         result.setTimeStamp(DateFormatUtils.format(new Date(), "yyyy-MM-dd HH:mm:ss"));
         result.setSender(serSessionId);//存入发送人sessionId
-        result.setCmd(Constants.CmdType.ONLINE);
+        result.setCmd(Constants.CmdType.BIND);
+
+        MessageBodyProto.MessageBody.Builder  msgbody =  MessageBodyProto.MessageBody.newBuilder();
+        msgbody.setContent("客服"+ serSessionId + "为您服务");
+        result.setContent(msgbody.build().toByteString());
         return result.build();
     }
 }

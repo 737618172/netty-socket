@@ -29,49 +29,76 @@
     <%--    // alert(${session.cid});--%>
     <%--})--%>
     var sessionId;
+    var receiverId;
 
-    $(function(){
+    $(function () {
         sessionId = "${pageContext.session.id}";
         console.log(sessionId);
     })
 
     var socket;
-    function send(msg){
-        if(!window.socket){
+
+    function send(msg) {
+        if (!window.socket) {
             return;
         }
 
         var message = new proto.Model();
         var content = new proto.MessageBody();
         message.setMsgtype(4);
-        message.setCmd(3);
-        message.setToken("123");
-        message.setSender("465");
-        message.setReceiver(123456);//机器人ID默认为0
+        message.setCmd(5);
+        message.setToken(sessionId);
+        message.setSender(sessionId);
+        console.log("receiver is " + receiverId);
+        message.setReceiver(receiverId);//机器人ID默认为0
         content.setContent(msg);
         content.setType(0)
         message.setContent(content.serializeBinary())
         console.log(message);
         socket.send(message.serializeBinary());
 
-        document.getElementsByName('message')[0].value ='';
+        document.getElementsByName('message')[0].value = '';
     }
 
-    function init(){
-        // httpPost("http://localhost:8010/inPage",null);
-
-        if(window.WebSocket){
+    function init() {
+        if (window.WebSocket) {
             socket = new WebSocket("ws://localhost:8040/");
             //接受服务器消息
-            socket.onmessage = function (ex){
-                var rt = document.getElementById("response");
-                rt.value = rt.value + "\n" + ex.data;
+            socket.onmessage = function (ex) {
+                var reader = new FileReader();
+                var ab;
+                reader.readAsArrayBuffer(ex.data);
+                reader.onload = function() {
+                    ab = this.result;
+                    if (ab instanceof ArrayBuffer) {
+                        var msg = proto.Model.deserializeBinary(ab);
+                        console.log(msg.getSender());
+                        if(msg.getCmd() == 1){
+                            receiverId = msg.getSender();
+                            var msgCon = proto.MessageBody.deserializeBinary(msg.getContent());
+                            console.log(msgCon.getContent());
+                            var rt = document.getElementById("response");
+                            rt.value = rt.value + "\n" + msgCon;
+                        }else if(msg.getCmd() == 2){
+
+                        }else if(msg.getCmd() == 3){
+
+                        }else if(msg.getCmd() == 4){
+
+                        }else if(msg.getCmd() == 5){
+                            var msgCon = proto.MessageBody.deserializeBinary(msg.getContent());
+                            var content = msgCon.getContent();
+                            var rt = document.getElementById("response");
+                            rt.value = rt.value + "\n" + content;
+                        }
+                    }
+                }
             }
-            socket.onopen= function (ex){
+            socket.onopen = function (ex) {
                 var rt = document.getElementById("response");
-                rt.value = rt.value + "\n" +"连接开启";
+                rt.value = rt.value + "\n" + "连接开启";
                 var message = new proto.Model();
-                var browser=BrowserUtil.info();
+                var browser = BrowserUtil.info();
                 message.setVersion("1.0");
                 message.setDeviceid("")
                 message.setCmd(1);
@@ -81,18 +108,19 @@
                 message.setPlatform(browser.name);
                 message.setPlatformversion(browser.version);
                 message.setToken(sessionId);
+                message.setUtype(1);
                 var bytes = message.serializeBinary();
                 console.log(bytes);
                 socket.send(bytes);
                 // showOfflineMsg();
             }
 
-            socket.onclose= function (ex){
+            socket.onclose = function (ex) {
                 var rt = document.getElementById("response");
-                rt.value = rt.value + "\n" +"连接断开";
+                rt.value = rt.value + "\n" + "连接断开";
             }
 
-        }else {
+        } else {
             alert("浏览器不支持websocket")
         }
     }
@@ -103,7 +131,7 @@
 
     <input type="button" value="在线咨询" onclick="init()"/>
 
-    <textarea name="message"  rows="20" cols="50"></textarea>
+    <textarea name="message" rows="20" cols="50"></textarea>
     <input type="button" value="发送" onclick="send(this.form.message.value)"/>
 
     <textarea id="response" rows="20" cols="50"></textarea>

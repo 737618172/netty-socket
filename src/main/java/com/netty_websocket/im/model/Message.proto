@@ -5,7 +5,7 @@ option java_outer_classname="MessageProto";
 message Model {
      string version = 1;//接口版本号
      string deviceId = 2;//设备uuid
-     uint32 cmd = 3;//请求接口命令字  1绑定  2心跳   3上线   4下线 
+     uint32 cmd = 3;//请求接口命令字  1绑定  2心跳   3上线   4下线  5消息
      string sender = 4;//发送人
      string receiver = 5;//接收人
      string name =6;//客户，客服名称
