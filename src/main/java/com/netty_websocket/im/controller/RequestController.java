@@ -15,7 +15,7 @@ public class RequestController {
     @RequestMapping(value = "/inPage")
     public ModelAndView inPage(HttpServletRequest request, HttpServletResponse response){
         ModelAndView modelAndView = new ModelAndView();
-        modelAndView.setViewName("/WEB-INF/pages/hello.jsp");
+        modelAndView.setViewName("hello");
         HttpSession session = request.getSession();
         return modelAndView;
     }
@@ -24,7 +24,7 @@ public class RequestController {
     @RequestMapping(value = "/chat")
     public ModelAndView chat(HttpServletRequest request, HttpServletResponse response){
         ModelAndView modelAndView = new ModelAndView();
-        modelAndView.setViewName("/WEB-INF/pages/chat.jsp");
+        modelAndView.setViewName("chat");
         HttpSession session = request.getSession();
         return modelAndView;
     }
