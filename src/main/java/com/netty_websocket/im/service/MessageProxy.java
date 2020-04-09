@@ -13,5 +13,16 @@ public interface MessageProxy {
     MessageProto.Model getCustomerConnMsg(String cusSessionId);
 
     MessageProto.Model getServerConnMsg(String serSessionId);
+
+    /**
+     * 保存在线消息
+     * @param message
+     */
+    void  saveOnlineMessageToDB(MessageWrapper message);
+    /**
+     * 保存离线消息
+     * @param message
+     */
+    void  saveOfflineMessageToDB(MessageWrapper message);
 }
 

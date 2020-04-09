@@ -99,6 +99,7 @@ public class WebSocketHandler extends SimpleChannelInboundHandler<MessageProto.M
 
         }else if(messageWrapper.isReply()){
 
+            connertor.pushMessage(messageWrapper);
         }
     }
 }

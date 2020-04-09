@@ -31,60 +31,57 @@ public class ImConnertorImpl implements ImConnertor {
 
 	@Override
 	public void pushMessage(MessageWrapper wrapper) throws RuntimeException {
-//        try {
-//        	//sessionManager.send(wrapper.getSessionId(), wrapper.getBody());
-//        	Session session = sessionManager.getSession(wrapper.getSessionId());
-//      		/*
-//      		 * 服务器集群时，可以在此
-//      		 * 判断当前session是否连接于本台服务器，如果是，继续往下走，如果不是，将此消息发往当前session连接的服务器并 return
-//      		 * if(session!=null&&!session.isLocalhost()){//判断当前session是否连接于本台服务器，如不是
-//      		 * //发往目标服务器处理
-//      		 * return;
-//      		 * }
-//      		 */
-//      		if (session != null) {
-//      			boolean result = session.write(wrapper.getBody());
-//      			return ;
-//      		}
-//        } catch (Exception e) {
-//        	log.error("connector pushMessage  Exception.", e);
-//            throw new RuntimeException(e.getCause());
-//        }
+        try {
+            ///取得接收人 给接收人写入消息
+            Session responseSession = sessionManager.getSession(wrapper.getReSessionId());
+            if (responseSession != null ) {
+                boolean result = responseSession.write(wrapper.getBody());
+                if(result){
+                    proxy.saveOnlineMessageToDB(wrapper);
+                }else{
+                    proxy.saveOfflineMessageToDB(wrapper);
+                }
+                return;
+            }else{
+                proxy.saveOfflineMessageToDB(wrapper);
+            }
+        } catch (Exception e) {
+            log.error("connector send occur PushException.", e);
+
+            throw new RuntimeException(e.getCause());
+        }
     }
 
 
 	@Override
 	public void pushMessage(String sessionId,MessageWrapper wrapper) throws RuntimeException{
-//		//判断是不是无效用户回复
+		//判断是不是无效用户回复
 //		if(!sessionId.equals(Constants.ImserverConfig.REBOT_SESSIONID)){//判断非机器人回复时验证
 //			Session session = sessionManager.getSession(sessionId);
 //	        if (session == null) {
 //	        	 throw new RuntimeException(String.format("session %s is not exist.", sessionId));
 //	        }
 //		}
-//	   try {
-//	    	///取得接收人 给接收人写入消息
-//	    	Session responseSession = sessionManager.getSession(wrapper.getReSessionId());
-//	  		if (responseSession != null && responseSession.isConnected() ) {
-//	  			boolean result = responseSession.write(wrapper.getBody());
-//	  			if(result){
-//	  				proxy.saveOnlineMessageToDB(wrapper);
-//	  			}else{
-//	  				proxy.saveOfflineMessageToDB(wrapper);
-//	  			}
-//	  			return;
-//	  		}else{
-//	  			proxy.saveOfflineMessageToDB(wrapper);
-//	  		}
-//	    } catch (PushException e) {
-//	    	log.error("connector send occur PushException.", e);
-//
-//	        throw new RuntimeException(e.getCause());
-//	    } catch (Exception e) {
-//	    	log.error("connector send occur Exception.", e);
-//	        throw new RuntimeException(e.getCause());
-//	    }
-//
+	   try {
+	    	///取得接收人 给接收人写入消息
+	    	Session responseSession = sessionManager.getSession(wrapper.getReSessionId());
+	  		if (responseSession != null ) {
+	  			boolean result = responseSession.write(wrapper.getBody());
+	  			if(result){
+	  				proxy.saveOnlineMessageToDB(wrapper);
+	  			}else{
+	  				proxy.saveOfflineMessageToDB(wrapper);
+	  			}
+	  			return;
+	  		}else{
+	  			proxy.saveOfflineMessageToDB(wrapper);
+	  		}
+	    } catch (Exception e) {
+	    	log.error("connector send occur PushException.", e);
+
+	        throw new RuntimeException(e.getCause());
+	    }
+
 	}
 
     @Override

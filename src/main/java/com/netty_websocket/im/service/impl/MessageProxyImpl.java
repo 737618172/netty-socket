@@ -134,4 +134,14 @@ public class MessageProxyImpl implements MessageProxy {
         result.setContent(msgbody.build().toByteString());
         return result.build();
     }
+
+    @Override
+    public void saveOnlineMessageToDB(MessageWrapper message) {
+
+    }
+
+    @Override
+    public void saveOfflineMessageToDB(MessageWrapper message) {
+
+    }
 }

@@ -26,13 +26,9 @@ public class MessageWrapper implements Serializable {
     }
 
     public enum MessageProtocol {
-        CONNECT, CLOSE, HEART_BEAT, SEND,GROUP, NOTIFY, REPLY, ON_LINE,OFF_LINE
+        CONNECT, CLOSE, HEART_BEAT, SEND, REPLY, ON_LINE,OFF_LINE
     }
 
-    public boolean isGroup() {
-        return MessageProtocol.GROUP.equals(this.protocol);
-    }
-    
     public boolean isConnect() {
         return MessageProtocol.CONNECT.equals(this.protocol);
     }
@@ -47,10 +43,6 @@ public class MessageWrapper implements Serializable {
 
     public boolean isSend() {
         return MessageProtocol.SEND.equals(this.protocol);
-    }
-
-    public boolean isNotify() {
-        return MessageProtocol.NOTIFY.equals(this.protocol);
     }
 
     public boolean isReply() {

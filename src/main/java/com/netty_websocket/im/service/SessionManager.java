@@ -68,7 +68,4 @@ public interface SessionManager {
     Session createSession(MessageWrapper wrapper, ChannelHandlerContext ctx);
     
     boolean exist(String sessionId) ;
-    
-
-   
 }
