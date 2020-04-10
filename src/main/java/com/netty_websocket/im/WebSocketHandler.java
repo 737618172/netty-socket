@@ -90,15 +90,15 @@ public class WebSocketHandler extends SimpleChannelInboundHandler<MessageProto.M
         String sessionId = ctx.channel().attr(Constants.SessionConfig.SERVER_SESSION_ID).get();
         MessageWrapper messageWrapper = messageProxy.convertToMessageWrapper(sessionId, msg);
 
-        if(messageWrapper.isConnect()){
+        if(messageWrapper.isOnline()){
             connertor.connect(ctx,messageWrapper);
         }else if(messageWrapper.isClose()){
+//            connertor.c
         }else if(messageWrapper.isSend()){
-
+            connertor.pushMessage(messageWrapper);
         }else if(messageWrapper.isHeartbeat()){
-
+            connertor.heartbeatToClient(ctx,messageWrapper);
         }else if(messageWrapper.isReply()){
-
             connertor.pushMessage(messageWrapper);
         }
     }

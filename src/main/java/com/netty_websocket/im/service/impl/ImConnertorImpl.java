@@ -93,7 +93,7 @@ public class ImConnertorImpl implements ImConnertor {
         	  //当sessionID存在或者相等  视为同一用户重新连接
               if (StringUtils.isNotEmpty(channelSession) || sessionId.equals(channelSession)) {
                   log.info("connector reconnect sessionId -> " + sessionId + ", ctx -> " + ctx.toString());
-//                  pushMessage(proxy.getReConnectionStateMsg(channelSession));
+                  pushMessage(proxy.getReConnectionStateMsg(channelSession));
               } else {
                   log.info("connector connect sessionId -> " + sessionId + ", sessionId0 -> " + channelSession + ", ctx -> " + ctx.toString());
                   Session session = sessionManager.createSession(wrapper, ctx);

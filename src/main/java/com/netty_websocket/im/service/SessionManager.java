@@ -17,7 +17,7 @@ public interface SessionManager {
 
     void updateSession(Session session,int type);
 
-    void updateSessionConCount(Session session,int type,int count);
+    void updateSessionCustomer(Session session,Session customerSession);
  
 
     /**

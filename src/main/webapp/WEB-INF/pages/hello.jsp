@@ -12,22 +12,12 @@
 </head>
 <body>
 <script type="text/javascript" src="https://cdn.bootcss.com/jquery/3.4.1/jquery.js"></script>
+<script src="layui/layui.js"></script>
 <script type="text/javascript" src="./js/util.js"></script>
 <script type="text/javascript" src="./js/message.js?v=1"></script>
 <script type="text/javascript" src="./js/messagebody.js"></script>
+<script src="js/websocketconfig.js"></script>
 <script>
-    <%--$(function () {--%>
-
-    <%--    $.ajax({--%>
-    <%--        type: "GET",--%>
-    <%--        url: "http://localhost:8010/inPage",--%>
-    <%--        dataType: 'json',--%>
-    <%--        success: function(result) {--%>
-    <%--            alert(result);--%>
-    <%--        }--%>
-    <%--    });--%>
-    <%--    // alert(${session.cid});--%>
-    <%--})--%>
     var sessionId;
     var receiverId;
 
@@ -37,6 +27,30 @@
     })
 
     var socket;
+
+    var showOfflineMsg = function () {
+        $.ajax({
+            type: "post",
+            url: "hisMessage",
+            async: true,
+            success: function (data) {
+                console.log("showOfflineMsg" + data);
+                var dataObj = eval("(" + data + ")");
+                // if (dataObj != null && dataObj.length > 0) {
+                //     var result = "";
+                //     var rt = document.getElementById("response");
+                //     for (var i = 0; i < dataObj.length; i++) {
+                //         console.log(dataObj[i]);
+                //         var username = dataObj[i].id + dataObj[i].sender;
+                //         var timestamp = dataObj[i].sendTime;
+                //         var msg = dataObj[i].content;
+                //         result = result + username + "   " + timestamp +"   : " + msg+ "\n";
+                //     }
+                //     rt.value = result;
+                // }
+            }
+        });
+    }
 
     function send(msg) {
         if (!window.socket) {
@@ -63,34 +77,32 @@
     function init() {
         if (window.WebSocket) {
             socket = new WebSocket("ws://localhost:8040/");
+            socket.binaryType = "arraybuffer";
             //接受服务器消息
             socket.onmessage = function (ex) {
-                var reader = new FileReader();
-                var ab;
-                reader.readAsArrayBuffer(ex.data);
-                reader.onload = function() {
-                    ab = this.result;
-                    if (ab instanceof ArrayBuffer) {
-                        var msg = proto.Model.deserializeBinary(ab);
-                        console.log(msg.getSender());
-                        if(msg.getCmd() == 1){
-                            receiverId = msg.getSender();
-                            var msgCon = proto.MessageBody.deserializeBinary(msg.getContent());
-                            console.log(msgCon.getContent());
-                            var rt = document.getElementById("response");
-                            rt.value = rt.value + "\n" + msgCon;
-                        }else if(msg.getCmd() == 2){
+                if (ex.data instanceof ArrayBuffer) {
+                    var msg = proto.Model.deserializeBinary(ex.data);
+                    console.log(msg);
+                    if (msg.getCmd() == 1) {
+                        receiverId = msg.getSender();
+                        var msgCon = proto.MessageBody.deserializeBinary(msg.getContent());
+                        console.log(msgCon.getContent());
+                        var rt = document.getElementById("response");
+                        alert(msgCon.getContent());
+                    } else if (msg.getCmd() == 2) {
+                        var message1 = new proto.Model();
+                        message1.setCmd(2);
+                        message1.setMsgtype(4);
+                        socket.send(message1.serializeBinary());
+                    }  else if (msg.getCmd() == 4) {
 
-                        }else if(msg.getCmd() == 3){
+                    } else if (msg.getCmd() == 5) {
+                        var msgCon = proto.MessageBody.deserializeBinary(msg.getContent());
+                        var content = msgCon.getContent();
+                        var rt = document.getElementById("response");
+                        rt.value = rt.value + "\n" + content;
+                    } else if (msg.getCmd() == 6) {//reconn
 
-                        }else if(msg.getCmd() == 4){
-
-                        }else if(msg.getCmd() == 5){
-                            var msgCon = proto.MessageBody.deserializeBinary(msg.getContent());
-                            var content = msgCon.getContent();
-                            var rt = document.getElementById("response");
-                            rt.value = rt.value + "\n" + content;
-                        }
                     }
                 }
             }
@@ -100,8 +112,8 @@
                 var message = new proto.Model();
                 var browser = BrowserUtil.info();
                 message.setVersion("1.0");
-                message.setDeviceid("")
-                message.setCmd(1);
+                message.setDeviceid("");
+                message.setCmd(3);
                 message.setSender(sessionId);
                 message.setMsgtype(1);
                 message.setFlag(1);
@@ -112,14 +124,20 @@
                 var bytes = message.serializeBinary();
                 console.log(bytes);
                 socket.send(bytes);
-                // showOfflineMsg();
+                showOfflineMsg();
             }
 
             socket.onclose = function (ex) {
                 var rt = document.getElementById("response");
                 rt.value = rt.value + "\n" + "连接断开";
+                console.log("onclose");
+                reconnect(websocketurl, init);
             }
-
+            socket.onerror = function () {
+                // layer.msg("服务器连接出错，请检查websocketconfig.js里面的IP地址");
+                console.log("onerror");
+                reconnect(websocketurl, init);
+            };
         } else {
             alert("浏览器不支持websocket")
         }

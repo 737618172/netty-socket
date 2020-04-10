@@ -26,7 +26,7 @@ public class MessageWrapper implements Serializable {
     }
 
     public enum MessageProtocol {
-        CONNECT, CLOSE, HEART_BEAT, SEND, REPLY, ON_LINE,OFF_LINE
+        CONNECT, CLOSE, HEART_BEAT, SEND, REPLY, ON_LINE,OFF_LINE,RECON
     }
 
     public boolean isConnect() {

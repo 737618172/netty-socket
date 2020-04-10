@@ -8,6 +8,7 @@ import java.io.Serializable;
 import java.net.InetAddress;
 import java.net.SocketAddress;
 import java.net.UnknownHostException;
+import java.util.List;
 
 @Data
 public class Session implements Serializable {
@@ -18,7 +19,6 @@ public class Session implements Serializable {
     private static final long serialVersionUID = 8269505210699191257L;
     private Channel session;
 
-    private Channel tSession;
     private int source;//来源 用于区分是websocket\socket\dwr
     private String deviceId;//客户端ID  (设备号码+应用包名),ios为devicetoken
     private String host;//session绑定的服务器IP
@@ -29,10 +29,11 @@ public class Session implements Serializable {
     private Long bindTime;//登录时间
     private Long updateTime;//更新时间
     private String sign;//签名
-    private Double longitude;//经度
-    private Double latitude;//维度
     private String location;//位置
     private int status;// 状态
+
+    private Channel server;//客服
+    private List<Channel> customers;//客户
     private int count;
 
 
@@ -45,70 +46,12 @@ public class Session implements Serializable {
         setAttribute("updateTime", updateTime);
     }
 
-
     public Session(Channel session) {
         this.session = session;
     }
 
     public Session() {
 
-    }
-
-    public void setLongitude(Double longitude) {
-        setAttribute("longitude", longitude);
-        this.longitude = longitude;
-    }
-
-    public void setLatitude(Double latitude) {
-        setAttribute("latitude", latitude);
-        this.latitude = latitude;
-    }
-
-    public void setLocation(String location) {
-        setAttribute("location", location);
-        this.location = location;
-    }
-
-    public void setDeviceId(String deviceId) {
-        this.deviceId = deviceId;
-
-        setAttribute("deviceId", deviceId);
-    }
-
-    public void setBindTime(Long bindTime) {
-        this.bindTime = bindTime;
-        setAttribute("bindTime", bindTime);
-    }
-
-    public void setHost(String host) {
-        this.host = host;
-
-        setAttribute("host", host);
-    }
-
-    public void setStatus(int status) {
-        this.status = status;
-        setAttribute("status", status);
-    }
-
-    public void setPlatform(String platform) {
-        this.platform = platform;
-        setAttribute("platform", platform);
-    }
-
-    public void setPlatformVersion(String platformVersion) {
-        this.platformVersion = platformVersion;
-        setAttribute("platformVersion", platformVersion);
-    }
-
-    public void setAppKey(String appKey) {
-        this.appKey = appKey;
-        setAttribute("appKey", appKey);
-    }
-
-    public void setSign(String sign) {
-        this.sign = sign;
-        setAttribute("sign", sign);
     }
 
     public void setSource(int source) {
@@ -196,13 +139,6 @@ public class Session implements Serializable {
 //		}
 //	}
 
-    public boolean equals(Object o) {
-
-        if (o instanceof Session) {
-            return hashCode() == o.hashCode();
-        }
-        return false;
-    }
 
     public boolean fromOtherDevice(Object o) {
 

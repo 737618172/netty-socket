@@ -1,14 +1,13 @@
 package com.netty_websocket.im.service.impl;
 
-import com.google.protobuf.ByteString;
 import com.netty_websocket.im.Constants;
 import com.netty_websocket.im.model.MessageBodyProto;
+import com.netty_websocket.im.model.MessageEntity;
 import com.netty_websocket.im.model.MessageProto;
-import com.netty_websocket.im.model.Session;
-import com.netty_websocket.im.service.MessageProxy;
 import com.netty_websocket.im.model.MessageWrapper;
+import com.netty_websocket.im.repository.MessageRepository;
+import com.netty_websocket.im.service.MessageProxy;
 import com.netty_websocket.im.service.SessionManager;
-import io.netty.channel.ChannelHandlerContext;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateFormatUtils;
 import org.slf4j.Logger;
@@ -18,8 +17,6 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
-import java.util.Iterator;
-import java.util.Set;
 
 @Service
 public class MessageProxyImpl implements MessageProxy {
@@ -31,29 +28,15 @@ public class MessageProxyImpl implements MessageProxy {
     @Autowired
     private SessionManager sessionManager;
 
+    @Autowired
+    private MessageRepository messageRepository;
+
     @Override
     public MessageWrapper convertToMessageWrapper(String sessionId, MessageProto.Model message) {
 
         switch (message.getCmd()) {
             case Constants.CmdType.BIND:
-                //  设置通道session
-//                ctx.channel().attr(Constants.SessionConfig.SERVER_SESSION_ID).set(message.getSender());
-//
-//                if(Constants.UserType.SERVICER == message.getUtype()){
-//
-//                }else if (Constants.UserType.SERVICER == message.getUtype()){
-//                    redisTemplate.opsForSet().add("servicer",message.get);
-//                }
                 try {
-//                    Set members = redisTemplate.opsForSet().members("10891");
-//                    if(members!=null && members.size()>0){
-//                        Iterator iterator = members.iterator();
-//                        while(iterator.hasNext()){
-//
-//                        }
-//
-//                    }
-
                     return new MessageWrapper(MessageWrapper.MessageProtocol.CONNECT, message.getSender(), null, message);
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -67,7 +50,11 @@ public class MessageProxyImpl implements MessageProxy {
                 }
                 break;
             case Constants.CmdType.ONLINE:
-
+                try {
+                    return new MessageWrapper(MessageWrapper.MessageProtocol.ON_LINE, message.getSender(), null, message);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
                 break;
             case Constants.CmdType.OFFLINE:
 
@@ -137,11 +124,42 @@ public class MessageProxyImpl implements MessageProxy {
 
     @Override
     public void saveOnlineMessageToDB(MessageWrapper message) {
-
+        MessageEntity messageEntity = convertMessageWrapperToBean(message,1);
+        messageRepository.save(messageEntity);
     }
 
     @Override
     public void saveOfflineMessageToDB(MessageWrapper message) {
+        MessageEntity messageEntity = convertMessageWrapperToBean(message,0);
+        messageRepository.save(messageEntity);
+    }
 
+    private MessageEntity convertMessageWrapperToBean(MessageWrapper message,Integer isRead){
+        try{
+            //保存非机器人消息
+            if(!message.getSessionId().equals(Constants.ImserverConfig.REBOT_SESSIONID)){
+                MessageProto.Model  msg =  (MessageProto.Model)message.getBody();
+                MessageBodyProto.MessageBody  msgConten =  MessageBodyProto.MessageBody.parseFrom(msg.getContent());
+                MessageEntity  userMessage = new MessageEntity();
+                userMessage.setSender(message.getSessionId());
+                userMessage.setReceiver(message.getReSessionId());
+                userMessage.setContent(msgConten.getContent());
+                userMessage.setSendTime(msg.getTimeStamp());
+                userMessage.setIsRead(isRead);
+                return userMessage;
+            }
+        }catch(Exception e){
+            throw new RuntimeException(e.getCause());
+        }
+        return null;
+    }
+
+    @Override
+    public MessageWrapper getReConnectionStateMsg(String sessionId) {
+        MessageProto.Model.Builder  result = MessageProto.Model.newBuilder();
+        result.setTimeStamp(DateFormatUtils.format(new Date(), "yyyy-MM-dd HH:mm:ss"));
+        result.setSender(sessionId);//存入发送人sessionId
+        result.setCmd(Constants.CmdType.RECON);
+        return  new MessageWrapper(MessageWrapper.MessageProtocol.RECON, sessionId, null,result.build());
     }
 }

@@ -24,5 +24,12 @@ public interface MessageProxy {
      * @param message
      */
     void  saveOfflineMessageToDB(MessageWrapper message);
+
+    /**
+     * 重连信息
+     * @param sessionId
+     * @return
+     */
+    MessageWrapper  getReConnectionStateMsg(String sessionId);
 }
 

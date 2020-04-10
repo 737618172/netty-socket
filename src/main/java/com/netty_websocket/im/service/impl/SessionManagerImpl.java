@@ -5,6 +5,7 @@ import com.netty_websocket.im.model.MessageWrapper;
 import com.netty_websocket.im.model.Session;
 import com.netty_websocket.im.service.MessageProxy;
 import com.netty_websocket.im.service.SessionManager;
+import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,10 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
@@ -30,11 +28,12 @@ public class SessionManagerImpl implements SessionManager {
     private RedisTemplate redisTemplate;
     
     /**
-     * The set of currently active Sessions for this Manager, keyed by session
-     * identifier.
+     * customer session
      */
     protected Map<String, Session> sessions = new ConcurrentHashMap<String, Session>();
 
+
+    //server session
     protected Map<String,Session> serverSessions = new ConcurrentHashMap<String,Session>();
 
 
@@ -45,11 +44,13 @@ public class SessionManagerImpl implements SessionManager {
         }
         if(1 == type){
             sessions.put(session.getAccount(), session);
+            log.debug("put a session " + session.getAccount() + " to sessions!");
+            log.debug("sessions size " + sessions.size() );
         }else if(2==type){
             serverSessions.put(session.getAccount(), session);
+            log.debug("put a session " + session.getAccount() + " to serverSessions!");
+            log.debug("serverSessions size " + serverSessions.size() );
         }
-        log.debug("put a session " + session.getAccount() + " to sessions!");
-        log.debug("session size " + sessions.size() );
     }
 
     @Override
@@ -63,14 +64,16 @@ public class SessionManagerImpl implements SessionManager {
     }
 
     @Override
-    public synchronized void updateSessionConCount(Session session, int utype, int count) {
+    public synchronized void updateSessionCustomer(Session session, Session customerSession) {
+        customerSession.setServer(session.getSession());
         session.setUpdateTime(System.currentTimeMillis());
-        session.setCount(session.getCount() + count);
-        if(1 == utype){
-            sessions.put(session.getAccount(), session);
-        }else if(2 == utype){
-            serverSessions.put(session.getAccount(), session);
+        session.setCount(session.getCount() +1);
+        List<Channel> customers = session.getCustomers();
+        if(null == customers){
+            customers = new ArrayList<>();
+            session.setCustomers(customers);
         }
+        customers.add(customerSession.getSession());
     }
 
     /**
@@ -166,16 +169,19 @@ public class SessionManagerImpl implements SessionManager {
 
         session = setSessionContent(ctx,wrapper,sessionId);
         if(1 == utype){//为客户分配客服
-            List<Session> collect = serverSessions.values().stream().sorted(Comparator.comparing(Session::getCount)).collect(Collectors.toList());
-            Session session2 = collect.get(0);
-            session.setTSession(session2.getSession());
-            updateSessionConCount(session2,utype,1);
+            if(serverSessions.size()>0){
+                List<Session> collect = serverSessions.values().stream().sorted(Comparator.comparing(Session::getCount)).collect(Collectors.toList());
+                Session session2 = collect.get(0);
+                updateSessionCustomer(session2,session);
 
-            MessageProto.Model onLineStateMsg = proxy.getCustomerConnMsg(session.getAccount());
-            session2.getSession().writeAndFlush(onLineStateMsg);
-            MessageProto.Model serverConnMsg = proxy.getServerConnMsg(session2.getAccount());
-            session.getSession().writeAndFlush(serverConnMsg);
-            log.info("为客服分配客户"+ session.getAccount());
+                MessageProto.Model onLineStateMsg = proxy.getCustomerConnMsg(session.getAccount());
+                session2.getSession().writeAndFlush(onLineStateMsg);
+                MessageProto.Model serverConnMsg = proxy.getServerConnMsg(session2.getAccount());
+                session.getSession().writeAndFlush(serverConnMsg);
+                log.info("为客服分配客户"+ session.getAccount());
+            }else{
+                //提示没有空闲客服
+            }
         }
         addSession(session,utype);
         return session;

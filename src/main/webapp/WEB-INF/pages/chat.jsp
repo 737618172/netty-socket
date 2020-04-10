@@ -471,7 +471,6 @@
 
     $(function () {
 
-        //一般直接写在一个js文件中
         layui.use(['layer', 'jquery'], function () {
             var layer = layui.layer
                 , $ = layui.jquery;
@@ -554,25 +553,38 @@
             // }
 
             // var initEventHandle = function () {
-			var socket;
-            var customers=[];
-			if(window.WebSocket){
-				socket = new WebSocket("ws://localhost:8040/");
+            var socket;
+            var customers = [];
+            if (window.WebSocket) {
+                socket = new WebSocket("ws://localhost:8040/");
+                socket.binaryType = "arraybuffer";
                 //收到消息后
                 socket.onmessage = function (event) {
-                    var reader = new FileReader();
-                    var ab;
 
-                    reader.onload = function() {
-                        console.log(this.result);
-                        ab = this.result;
+                    if (event.data instanceof ArrayBuffer) {
+                        var msg = proto.Model.deserializeBinary(event.data);      //如果后端发送的是二进制帧（protobuf）会收到前面定义的类型
+                        //心跳消息
+                        if (msg.getCmd() == 1) {
+                            var msgCon = proto.MessageBody.deserializeBinary(msg.getContent());
+                            customers.push(msg.getSender());
+                            var existsUser = $("li[title='" + msg.getSender() + "']").html();
+                            if (existsUser == undefined) {
+                                var usertpl = $(".usertemplate").html();
+                                usertpl = usertpl.replace("{user}", msg.getSender()).replace("{user}", msg.getSender());
+                                $(".u-lst").append(usertpl);
+                            } else {
+                                $("li[title='" + msg.getSender() + "']").removeClass("off");
+                            }
 
-                        if (ab instanceof ArrayBuffer) {
-                            var msg = proto.Model.deserializeBinary(ab);      //如果后端发送的是二进制帧（protobuf）会收到前面定义的类型
-                            //心跳消息
-                            if(msg.getCmd() == 1){
-                                var msgCon = proto.MessageBody.deserializeBinary(msg.getContent());
-                                customers.push(msg.getSender());
+                        } else if (msg.getCmd() == 2) {
+                            //发送心跳回应
+                            var message1 = new proto.Model();
+                            message1.setCmd(2);
+                            message1.setMsgtype(4);
+                            socket.send(message1.serializeBinary());
+                        } else if (msg.getCmd() == 3) {
+                            var msgCon = proto.MessageBody.deserializeBinary(msg.getContent());
+                            if (msg.getSender() != currentsession) {
                                 var existsUser = $("li[title='" + msg.getSender() + "']").html();
                                 if (existsUser == undefined) {
                                     var usertpl = $(".usertemplate").html();
@@ -581,45 +593,25 @@
                                 } else {
                                     $("li[title='" + msg.getSender() + "']").removeClass("off");
                                 }
-
-                            } else if (msg.getCmd() == 2) {
-                                //发送心跳回应
-                                var message1 = new proto.Model();
-                                message1.setCmd(2);
-                                message1.setMsgtype(4);
-                                socket.send(message1.serializeBinary());
-                            } else if (msg.getCmd() == 3) {
-                                var msgCon = proto.MessageBody.deserializeBinary(msg.getContent());
-                                if (msg.getSender() != currentsession) {
-                                    var existsUser = $("li[title='" + msg.getSender() + "']").html();
-                                    if (existsUser == undefined) {
-                                        var usertpl = $(".usertemplate").html();
-                                        usertpl = usertpl.replace("{user}", msg.getSender()).replace("{user}", msg.getSender());
-                                        $(".u-lst").append(usertpl);
-                                    } else {
-                                        $("li[title='" + msg.getSender() + "']").removeClass("off");
-                                    }
-                                }
-                            } else if (msg.getCmd() == 4) {
-                                if (msg.getSender() != currentsession) {
-                                    layer.msg("用户" + msg.getSender() + "下线了");
-                                    $("li[title='" + msg.getSender() + "']").addClass("off");
-                                }
-                            } else if (msg.getCmd() == 5) {
-                                //显示非自身消息
-                                if (msg.getSender() != currentsession) {
-                                    //不显示用户组消息
-                                    if (msg.getGroupid() == null || msg.getGroupid().length < 1) {
-                                        var msgCon = proto.MessageBody.deserializeBinary(msg.getContent());
-                                        reMsg(msg.getSender(), msg.getTimestamp(), msgCon.getContent());
-                                    }
+                            }
+                        } else if (msg.getCmd() == 4) {
+                            if (msg.getSender() != currentsession) {
+                                layer.msg("用户" + msg.getSender() + "下线了");
+                                $("li[title='" + msg.getSender() + "']").addClass("off");
+                            }
+                        } else if (msg.getCmd() == 5) {
+                            //显示非自身消息
+                            if (msg.getSender() != currentsession) {
+                                //不显示用户组消息
+                                if (msg.getGroupid() == null || msg.getGroupid().length < 1) {
+                                    var msgCon = proto.MessageBody.deserializeBinary(msg.getContent());
+                                    reMsg(msg.getSender(), msg.getTimestamp(), msgCon.getContent());
                                 }
                             }
-                        } else {
-                            var data = event.data;                //后端返回的是文本帧时触发
                         }
+                    } else {
+                        var data = event.data;                //后端返回的是文本帧时触发
                     }
-                    reader.readAsArrayBuffer(event.data);
 
                 };
                 //连接后
@@ -629,7 +621,7 @@
                     var browser = BrowserUtil.info();
                     message.setVersion("1.0");
                     message.setDeviceid("")
-                    message.setCmd(1);
+                    message.setCmd(3);
                     message.setSender(currentsession);
                     message.setMsgtype(1);
                     message.setFlag(1);

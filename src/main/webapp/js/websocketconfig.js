@@ -2,7 +2,7 @@ var websocketurl="ws://localhost:8040/"+window.location.hostname+":2048/ws";   /
 var reconnectflag = false;//避免重复连接
 var socket; 
 
-function createWebSocket(url,callbak) {
+function createWebSocket(callbak) {
    try {
       if (!window.WebSocket) {
   	      window.WebSocket = window.MozWebSocket; 
@@ -37,11 +37,12 @@ function createWebSocket(url,callbak) {
  
 
 function reconnect(url,callbak) {
+	console.log("reconnect")
     if(reconnectflag) return;
     reconnectflag = true;
     //没连接上会一直重连，设置延迟避免请求过多
     setTimeout(function () {
-        createWebSocket(url,callbak);
+        createWebSocket(callbak);
         reconnectflag = false;
     }, 2000);
 }
