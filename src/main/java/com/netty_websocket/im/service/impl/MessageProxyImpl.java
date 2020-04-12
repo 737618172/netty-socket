@@ -162,4 +162,12 @@ public class MessageProxyImpl implements MessageProxy {
         result.setCmd(Constants.CmdType.RECON);
         return  new MessageWrapper(MessageWrapper.MessageProtocol.RECON, sessionId, null,result.build());
     }
+
+    @Override
+    public MessageWrapper getOfflineMsg( ) {
+        MessageProto.Model.Builder  result = MessageProto.Model.newBuilder();
+        result.setTimeStamp(DateFormatUtils.format(new Date(), "yyyy-MM-dd HH:mm:ss"));
+        result.setCmd(4);
+        return new MessageWrapper(MessageWrapper.MessageProtocol.RECON, null, null,result.build());
+    }
 }

@@ -31,5 +31,8 @@ public interface MessageProxy {
      * @return
      */
     MessageWrapper  getReConnectionStateMsg(String sessionId);
+
+
+    MessageWrapper  getOfflineMsg( );
 }
 

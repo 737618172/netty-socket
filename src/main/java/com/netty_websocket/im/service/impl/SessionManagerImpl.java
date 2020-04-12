@@ -1,5 +1,6 @@
 package com.netty_websocket.im.service.impl;
 
+import com.netty_websocket.im.Constants;
 import com.netty_websocket.im.model.MessageProto;
 import com.netty_websocket.im.model.MessageWrapper;
 import com.netty_websocket.im.model.Session;
@@ -98,37 +99,29 @@ public class SessionManagerImpl implements SessionManager {
     }
 
     @Override
-    public synchronized void removeSession(String sessionId,String nid) {
-//    	try{
-//    		Session session = getSession(sessionId);
-//    		if(session!=null){
-//    			int source = session.getSource();
-//    			if(source==Constants.ImserverConfig.WEBSOCKET || source==Constants.ImserverConfig.DWR){
-//    				session.close(nid);
-//    				//判断没有其它session后 从SessionManager里面移除
-//    				if(session.otherSessionSize()<1){
-//    					sessions.remove(sessionId);
-//    					MessageProto.Model model = proxy.getOffLineStateMsg(sessionId);
-//    					ImChannelGroup.broadcast(model);
-//    					//dwr全员消息广播
-//    					DwrUtil.sedMessageToAll(model);
-//    				}
-//    			} else{
-//    				session.close();
-//    				sessions.remove(sessionId);
-//    				MessageProto.Model model = proxy.getOffLineStateMsg(sessionId);
-//    				ImChannelGroup.broadcast(model);
-//    				DwrUtil.sedMessageToAll(model);
-//    			}
-//    		}
-//    	}catch(Exception e){
-//
-//    	}finally{
-//
-//
-//    	}
-//        log.info("remove the session " + sessionId + " from sessions!");
+    public synchronized void removeSession(String sessionId,Integer uType ) {
+    	try{
+    		Session session = getSession(sessionId);
+    		if(session!=null){
+    			int source = session.getSource();
+                session.close();
+                //判断没有其它session后 从SessionManager里面移除
+                if(1 == uType){
+                    sessions.remove(sessionId);
+//                    MessageProto.Model model = proxy.getOffLineStateMsg(sessionId);
+                }else if(2 ==uType){
+                    serverSessions.remove(sessionId);
+                }
+    		}
+    	}catch(Exception e){
+            e.printStackTrace();
+    	}finally{
+
+
+    	}
+        log.info("remove the session " + sessionId + " from sessions!");
     }
+
     @Override
     public Session getSession(String sessionId) {
         Session session = sessions.get(sessionId);
@@ -217,4 +210,14 @@ public class SessionManagerImpl implements SessionManager {
         Session session = getSession(sessionId);
         return session != null ;
 	}
+
+    @Override
+    public Session switchSession(Session session, ChannelHandlerContext ctx) {
+        if(session.getSession() != null){
+            session.getSession().writeAndFlush(proxy.getOfflineMsg());
+//            session.setSession(ctx.channel());
+        }
+            session.setSession(ctx.channel());
+        return session;
+    }
 }

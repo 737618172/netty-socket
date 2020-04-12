@@ -2,6 +2,7 @@ package com.netty_websocket.im.service;
 
 import com.netty_websocket.im.model.MessageWrapper;
 import com.netty_websocket.im.model.Session;
+import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 
 import java.util.Set;
@@ -32,9 +33,9 @@ public interface SessionManager {
      * 
      *
      * @param sessionId
-     * @param nid  is socketid 
+     * @param uType  is user type
      */
-     void removeSession(String sessionId, String nid);
+     void removeSession(String sessionId, Integer uType );
 
     /**
      * 根据指定sessionId获取session
@@ -68,4 +69,6 @@ public interface SessionManager {
     Session createSession(MessageWrapper wrapper, ChannelHandlerContext ctx);
     
     boolean exist(String sessionId) ;
+
+    Session switchSession(Session session, ChannelHandlerContext ctx);
 }

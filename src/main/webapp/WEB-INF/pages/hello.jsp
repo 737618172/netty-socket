@@ -18,12 +18,12 @@
 <script type="text/javascript" src="./js/messagebody.js"></script>
 <script src="js/websocketconfig.js"></script>
 <script>
-    var sessionId;
+    var token;
     var receiverId;
 
     $(function () {
-        sessionId = "${pageContext.session.id}";
-        console.log(sessionId);
+        token = "${cookie.token.value }";
+        console.log(token);
     })
 
     var socket;
@@ -35,7 +35,8 @@
             async: true,
             success: function (data) {
                 console.log("showOfflineMsg" + data);
-                var dataObj = eval("(" + data + ")");
+                console.log(data);
+                // var dataObj = eval("(" + data + ")");
                 // if (dataObj != null && dataObj.length > 0) {
                 //     var result = "";
                 //     var rt = document.getElementById("response");
@@ -61,8 +62,8 @@
         var content = new proto.MessageBody();
         message.setMsgtype(4);
         message.setCmd(5);
-        message.setToken(sessionId);
-        message.setSender(sessionId);
+        message.setToken(token);
+        message.setSender(token);
         console.log("receiver is " + receiverId);
         message.setReceiver(receiverId);//机器人ID默认为0
         content.setContent(msg);
@@ -114,12 +115,12 @@
                 message.setVersion("1.0");
                 message.setDeviceid("");
                 message.setCmd(3);
-                message.setSender(sessionId);
+                message.setSender(token);
                 message.setMsgtype(1);
                 message.setFlag(1);
                 message.setPlatform(browser.name);
                 message.setPlatformversion(browser.version);
-                message.setToken(sessionId);
+                message.setToken(token);
                 message.setUtype(1);
                 var bytes = message.serializeBinary();
                 console.log(bytes);

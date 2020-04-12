@@ -79,6 +79,7 @@ public class SocketChannelInitializer extends ChannelInitializer {
         });
         pipeline.addLast(decoder);
         pipeline.addLast(new IdleStateHandler(Constants.ImserverConfig.READ_IDLE_TIME,Constants.ImserverConfig.WRITE_IDLE_TIME,Constants.ImserverConfig.PING_TIME_OUT));
+//        pipeline.addLast(new IdleStateHandler(5,10,30));
         pipeline.addLast(new WebSocketHandler(messageProxy,connertor));
     }
 }

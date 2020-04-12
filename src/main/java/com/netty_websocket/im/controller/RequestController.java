@@ -29,10 +29,26 @@ public class RequestController {
     @RequestMapping(value = "/inPage")
     public ModelAndView inPage(HttpServletRequest request, HttpServletResponse response){
         ModelAndView modelAndView = new ModelAndView();
-        request.getSession().setAttribute("uuid", UUID.randomUUID().toString());
+        Cookie[] cookies = request.getCookies();
+        boolean flag = false;
+        for(Cookie c:cookies){
+            if("token".equals(c.getName())){
+                flag = true;
+                c.setMaxAge(24 * 60 * 60 * 3);
+                break;
+            }
+        }
+        if(!flag){
+            Cookie cookie = new Cookie("token",UUID.randomUUID().toString());
+            cookie.setMaxAge(24 * 60 * 60 * 3);
+            response.addCookie(cookie);
+        }
         modelAndView.setViewName("hello");
         return modelAndView;
     }
+//    3B566D22336B8C579E590A753D2BBD77
+//    A13830AE9A4BFBF2B089011255C2D4DE
+//    3414AE4B7F231F0DA0B61A22845A0CB7
 
 
     @RequestMapping(value = "/chat")
@@ -45,12 +61,14 @@ public class RequestController {
     @RequestMapping(value = "/offLineMessage",method = RequestMethod.POST)
     @ResponseBody
     public List<MessageEntity> offLineMessage(String sessionId){
+        System.out.println("offLineMessage");
         return messageService.queryOffLineMessage(sessionId);
     }
 
     @RequestMapping(value = "/hisMessage",method = RequestMethod.POST)
     @ResponseBody
     public List<MessageEntity> hisMessage(String sessionId){
+        System.out.println("hisMessage");
         return messageService.queryHisMessage(sessionId);
     }
 

@@ -3,8 +3,8 @@ option java_package="com.netty_websocket.im.model";
 option java_outer_classname="MessageProto";
 
 message Model {
-     string version = 1;//接口版本号
-     string deviceId = 2;//设备uuid
+//     string version = 1;//接口版本号
+//     string deviceId = 2;//设备uuid
      uint32 cmd = 3;//请求接口命令字  1绑定  2心跳   3上线   4下线  5消息 6重连
      string sender = 4;//发送人
      string receiver = 5;//接收人
@@ -14,9 +14,9 @@ message Model {
      string platform = 9;//mobile-ios mobile-android pc-windows pc-mac
      string platformVersion = 10;//客户端版本号
      string token = 11;//客户端凭证
-     string appKey = 12;//客户端key
+//     string appKey = 12;//客户端key
      string timeStamp = 13;//时间戳
-     string sign = 14;//签名 
+//     string sign = 14;//签名
      bytes content = 15;//请求数据
      uint32 utype = 16;//用户类型
 }

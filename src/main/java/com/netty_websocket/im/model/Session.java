@@ -19,7 +19,7 @@ public class Session implements Serializable {
     private static final long serialVersionUID = 8269505210699191257L;
     private Channel session;
 
-    private int source;//来源 用于区分是websocket\socket\dwr
+    private int source;//来源 用于区分是websocket\socket
     private String deviceId;//客户端ID  (设备号码+应用包名),ios为devicetoken
     private String host;//session绑定的服务器IP
     private String account;//session绑定的账号
@@ -155,6 +155,10 @@ public class Session implements Serializable {
     public boolean fromCurrentDevice(Object o) {
 
         return !fromOtherDevice(o);
+    }
+
+    public void close( ) {
+        session.close();
     }
 
 
