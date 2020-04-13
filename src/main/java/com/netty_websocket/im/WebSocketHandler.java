@@ -98,7 +98,8 @@ public class WebSocketHandler extends SimpleChannelInboundHandler<MessageProto.M
 //    protected void channelRead0(ChannelHandlerContext ctx, TextWebSocketFrame msg) throws Exception {
     protected void channelRead0(ChannelHandlerContext ctx, MessageProto.Model msg) throws Exception {
 
-        String sessionId = ctx.channel().attr(Constants.SessionConfig.SERVER_SESSION_ID).get();
+        String sessionId = msg.getToken();
+//        String sessionId = ctx.channel().attr(Constants.SessionConfig.SERVER_SESSION_ID).get();
         MessageWrapper messageWrapper = messageProxy.convertToMessageWrapper(sessionId, msg);
 
         if(messageWrapper.isOnline()){

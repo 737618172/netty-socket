@@ -31,4 +31,6 @@ public class MessageEntity {
     private Integer contentType;
 
     private Integer isRead;
+
+    private Long chatWindowId;
 }

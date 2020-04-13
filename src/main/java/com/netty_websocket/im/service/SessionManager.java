@@ -43,32 +43,32 @@ public interface SessionManager {
      * @param sessionId
      * @return
      */
-    Session getSession(String sessionId);
+    Session getSession(String sessionId,Integer uType);
 
     /**
      * 获取所有的session
      *
      * @return
      */
-    Session[] getSessions();
+//    Session[] getSessions();
 
     /**
      * 获取所有的session的id集合
      *
      * @return
      */
-    Set<String> getSessionKeys();
+//    Set<String> getSessionKeys();
 
     /**
      * 获取所有的session数目
      *
      * @return
      */
-    int getSessionCount();
+//    int getSessionCount();
  
     Session createSession(MessageWrapper wrapper, ChannelHandlerContext ctx);
     
-    boolean exist(String sessionId) ;
+//    boolean exist(String sessionId) ;
 
-    Session switchSession(Session session, ChannelHandlerContext ctx);
+    Session switchSession(Session session, ChannelHandlerContext ctx,MessageWrapper wrapper);
 }

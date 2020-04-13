@@ -31,7 +31,7 @@ public interface ImConnertor {
 	  * @param ctx
 	  * @return
 	  */
-	 String getChannelSessionId(ChannelHandlerContext ctx);
+	 String[] getChannelSessionId(ChannelHandlerContext ctx);
 
 	void close(ChannelHandlerContext hander);
 }

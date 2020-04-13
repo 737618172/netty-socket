@@ -65,6 +65,7 @@ public class MessageProxyImpl implements MessageProxy {
                     result.setTimeStamp(DateFormatUtils.format(new Date(), "yyyy-MM-dd HH:mm:ss"));
                     result.setSender(sessionId);//存入发送人sessionId
                     message = MessageProto.Model.parseFrom(result.build().toByteArray());
+
                     //判断消息是否有接收人
                     if (StringUtils.isNotEmpty(message.getReceiver())) {
                         //判断是否发消息给机器人

@@ -33,7 +33,7 @@ public class Session implements Serializable {
     private int status;// 状态
 
     private Channel server;//客服
-    private List<Channel> customers;//客户
+//    private List<Channel> customers;//客户
     private int count;
 
 

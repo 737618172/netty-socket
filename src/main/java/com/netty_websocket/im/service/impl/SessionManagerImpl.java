@@ -1,9 +1,11 @@
 package com.netty_websocket.im.service.impl;
 
 import com.netty_websocket.im.Constants;
+import com.netty_websocket.im.model.ChatWindow;
 import com.netty_websocket.im.model.MessageProto;
 import com.netty_websocket.im.model.MessageWrapper;
 import com.netty_websocket.im.model.Session;
+import com.netty_websocket.im.repository.ChatWindowRepository;
 import com.netty_websocket.im.service.MessageProxy;
 import com.netty_websocket.im.service.SessionManager;
 import io.netty.channel.Channel;
@@ -12,10 +14,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 @Service
@@ -27,14 +31,17 @@ public class SessionManagerImpl implements SessionManager {
 
     @Autowired
     private RedisTemplate redisTemplate;
+
+    @Autowired
+    private ChatWindowRepository chatWindowRepository;
     
     /**
      * customer session
      */
-    protected Map<String, Session> sessions = new ConcurrentHashMap<String, Session>();
+//    protected Map<String, Session> sessions = new ConcurrentHashMap<String, Session>();
 
 
-    //server session
+//    server session
     protected Map<String,Session> serverSessions = new ConcurrentHashMap<String,Session>();
 
 
@@ -44,10 +51,12 @@ public class SessionManagerImpl implements SessionManager {
             return;
         }
         if(1 == type){
-            sessions.put(session.getAccount(), session);
-            log.debug("put a session " + session.getAccount() + " to sessions!");
-            log.debug("sessions size " + sessions.size() );
+            redisTemplate.opsForValue().set(Constants.ImserverConfig.CUSTOMER_SESSION_PRE,session,5, TimeUnit.DAYS);
+//            sessions.put(session.getAccount(), session);
         }else if(2==type){
+
+//            redisTemplate.opsForHash().put(1089+"server",session.getAccount(),session);
+//            redisTemplate.expire(1089+"server",12,TimeUnit.HOURS);
             serverSessions.put(session.getAccount(), session);
             log.debug("put a session " + session.getAccount() + " to serverSessions!");
             log.debug("serverSessions size " + serverSessions.size() );
@@ -58,9 +67,12 @@ public class SessionManagerImpl implements SessionManager {
     public synchronized void updateSession(Session session,int type) {
         session.setUpdateTime(System.currentTimeMillis());
         if(1 == type){
-            sessions.put(session.getAccount(), session);
+            redisTemplate.opsForValue().set(Constants.ImserverConfig.CUSTOMER_SESSION_PRE,session,5, TimeUnit.DAYS);
+//            sessions.put(session.getAccount(), session);
         }else if(2 == type){
             serverSessions.put(session.getAccount(), session);
+//            redisTemplate.opsForHash().put(1089+"server",session.getAccount(),session);
+//            redisTemplate.expire(1089+"server",12,TimeUnit.HOURS);
         }
     }
 
@@ -69,12 +81,17 @@ public class SessionManagerImpl implements SessionManager {
         customerSession.setServer(session.getSession());
         session.setUpdateTime(System.currentTimeMillis());
         session.setCount(session.getCount() +1);
-        List<Channel> customers = session.getCustomers();
-        if(null == customers){
-            customers = new ArrayList<>();
-            session.setCustomers(customers);
-        }
-        customers.add(customerSession.getSession());
+
+//        List<Channel> customers = session.getCustomers();
+//        if(null == customers){
+//            customers = new ArrayList<>();
+//            session.setCustomers(customers);
+//        }
+//        customers.add(customerSession.getSession());
+
+//        redisTemplate.opsForValue().set(Constants.ImserverConfig.CUSTOMER_SESSION_PRE + session.getAccount(),session,5, TimeUnit.DAYS);
+//        redisTemplate.opsForHash().put(1089,session.getAccount(),session);
+        redisTemplate.opsForValue().set(Constants.ImserverConfig.CUSTOMER_SESSION_PRE + customerSession.getAccount(),customerSession,5, TimeUnit.DAYS);
     }
 
     /**
@@ -101,13 +118,17 @@ public class SessionManagerImpl implements SessionManager {
     @Override
     public synchronized void removeSession(String sessionId,Integer uType ) {
     	try{
-    		Session session = getSession(sessionId);
+    		Session session = getSession(sessionId,uType);
     		if(session!=null){
-    			int source = session.getSource();
                 session.close();
                 //判断没有其它session后 从SessionManager里面移除
                 if(1 == uType){
-                    sessions.remove(sessionId);
+//                    sessions.remove(sessionId);
+                    Session s = (Session) redisTemplate.opsForValue().get(Constants.ImserverConfig.CUSTOMER_SESSION_PRE + sessionId);
+                    if(null != s){
+                        s.setSession(null);
+                        redisTemplate.opsForValue().set(Constants.ImserverConfig.CUSTOMER_SESSION_PRE + sessionId,session,5, TimeUnit.DAYS);
+                    }
 //                    MessageProto.Model model = proxy.getOffLineStateMsg(sessionId);
                 }else if(2 ==uType){
                     serverSessions.remove(sessionId);
@@ -123,44 +144,38 @@ public class SessionManagerImpl implements SessionManager {
     }
 
     @Override
-    public Session getSession(String sessionId) {
-        Session session = sessions.get(sessionId);
-        if(null == session){
+    public Session getSession(String sessionId,Integer uType) {
+        Session session = null;
+        if(1==uType){
+            session = (Session) redisTemplate.opsForValue().get(Constants.ImserverConfig.CUSTOMER_SESSION_PRE + sessionId);
+        }else if(2==uType){
             session = serverSessions.get(sessionId);
         }
         return session;
     }
-    @Override
-    public Session[] getSessions() {
-        return sessions.values().toArray(new Session[0]);
-    }
-    @Override
-    public Set<String> getSessionKeys() {
-        return sessions.keySet();
-    }
-    @Override
-    public int getSessionCount() {
-        return sessions.size();
-    }
+//    @Override
+//    public Session[] getSessions() {
+//        return sessions.values().toArray(new Session[0]);
+//    }
+//    @Override
+//    public Set<String> getSessionKeys() {
+//        return sessions.keySet();
+//    }
+//    @Override
+//    public int getSessionCount() {
+//        return sessions.size();
+//    }
 
 
     @Override
     public  Session createSession(MessageWrapper wrapper, ChannelHandlerContext ctx) {
     	String sessionId = wrapper.getSessionId();
-        Session session = sessions.get(sessionId);
         Session session1 = serverSessions.get(sessionId);
         MessageProto.Model body = (MessageProto.Model) wrapper.getBody();
         int utype = body.getUtype();
-        if (session != null || session1 != null) {
-        	log.info("session " + sessionId + " exist!");
-            //用于解决websocket多开页面session被踢下线的问题
-            Session  newsession = setSessionContent(ctx,wrapper,sessionId);
-            updateSession(newsession,utype);
-            log.info("session " + sessionId + " update!");
-            return newsession;
-        }
 
-        session = setSessionContent(ctx,wrapper,sessionId);
+        Session session = setSessionContent(ctx,wrapper,sessionId);
+
         if(1 == utype){//为客户分配客服
             if(serverSessions.size()>0){
                 List<Session> collect = serverSessions.values().stream().sorted(Comparator.comparing(Session::getCount)).collect(Collectors.toList());
@@ -171,9 +186,15 @@ public class SessionManagerImpl implements SessionManager {
                 session2.getSession().writeAndFlush(onLineStateMsg);
                 MessageProto.Model serverConnMsg = proxy.getServerConnMsg(session2.getAccount());
                 session.getSession().writeAndFlush(serverConnMsg);
-                log.info("为客服分配客户"+ session.getAccount());
+                ChatWindow chatWindow = new ChatWindow();
+                chatWindow.setCustomerSession(sessionId);
+                chatWindow.setServerSession(session2.getAccount());
+//                chatWindow.setUserId();
+//                chatWindow.setSId();
+                System.out.println("窗口的Id===="+chatWindow.getId());
+                chatWindowRepository.save(chatWindow);
             }else{
-                //提示没有空闲客服
+                //提示没有空闲客服 TODO
             }
         }
         addSession(session,utype);
@@ -205,19 +226,20 @@ public class SessionManagerImpl implements SessionManager {
     }
 
 
-	@Override
-	public boolean exist(String sessionId) {
-        Session session = getSession(sessionId);
-        return session != null ;
-	}
+//	@Override
+//	public boolean exist(String sessionId) {
+//        Session session = getSession(sessionId);
+//        return session != null ;
+//	}
 
     @Override
-    public Session switchSession(Session session, ChannelHandlerContext ctx) {
+    public Session switchSession(Session session, ChannelHandlerContext ctx,MessageWrapper wrapper) {
         if(session.getSession() != null){
             session.getSession().writeAndFlush(proxy.getOfflineMsg());
 //            session.setSession(ctx.channel());
         }
-            session.setSession(ctx.channel());
+//        Session session1 = setSessionContent(ctx, wrapper, session.getAccount());
+        session.setSession(ctx.channel());
         return session;
     }
 }

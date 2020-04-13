@@ -1,9 +1,12 @@
 package com.netty_websocket.im.controller;
 
+import com.netty_websocket.im.Constants;
 import com.netty_websocket.im.model.MessageEntity;
+import com.netty_websocket.im.model.Session;
 import com.netty_websocket.im.service.MessageService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -17,6 +20,7 @@ import javax.servlet.http.HttpSession;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 @Controller
 public class RequestController {
@@ -72,4 +76,54 @@ public class RequestController {
         return messageService.queryHisMessage(sessionId);
     }
 
+    @RequestMapping(value = "/redisSet",method = RequestMethod.GET)
+    @ResponseBody
+    public String redisSet(String sessionId){
+        redisTemplate.opsForValue().set(sessionId,"123");
+        return "ok";
+    }
+    @RequestMapping(value = "/redisGet",method = RequestMethod.GET)
+    @ResponseBody
+    public Object redisGet(String sessionId){
+        return  redisTemplate.opsForValue().get(sessionId);
+    }
+
+    @RequestMapping(value = "/redisGetKeys",method = RequestMethod.GET)
+    @ResponseBody
+    public String redisGetKeys(String pattern){
+        Set<String> keys = redisTemplate.keys(pattern);
+        for(Object k:keys){
+            System.out.println(k + "====" + redisTemplate.opsForValue().get(k));
+        }
+        return "ok";
+    }
+
+    @RequestMapping(value = "/redisHash",method = RequestMethod.GET)
+    @ResponseBody
+    public String redisHash(String sessionId){
+        redisTemplate.opsForHash().put(1089,"server1","1server");
+        redisTemplate.opsForHash().put(1089,"server2","2server");
+        redisTemplate.opsForHash().put(1089,"server3","3server");
+        return "ok";
+    }
+
+    @RequestMapping(value = "/redisHashG",method = RequestMethod.GET)
+    @ResponseBody
+    public String redisHashG(String sessionId){
+        Set keys = redisTemplate.opsForHash().keys(1089);
+        for(Object k :keys){
+            System.out.println(k + "====" + redisTemplate.opsForHash().get(1089,k));
+        }
+        return "ok";
+    }
+
+    @RequestMapping(value = "/redis",method = RequestMethod.GET)
+    @ResponseBody
+    public Object redis(){
+        Session session = new Session(null);
+        session.setAccount(UUID.randomUUID().toString());
+        redisTemplate.opsForValue().set(Constants.ImserverConfig.CUSTOMER_SESSION_PRE + session.getAccount(),session,5, TimeUnit.DAYS);
+
+        return redisTemplate.opsForValue().get(Constants.ImserverConfig.CUSTOMER_SESSION_PRE + session.getAccount());
+    }
 }

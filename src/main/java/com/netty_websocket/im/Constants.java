@@ -10,11 +10,6 @@ public class Constants {
 		public static final int ERROR = -1;
 	}
 
-	public static interface ViewTemplateConfig{
-		public static String template = "pctemplate/";
-		public static String mobiletemplate = "mobiletemplate/";
-	}
-
 	public static interface NotifyConfig{
 		public static final int NOTIFY_SUCCESS = 1;
 	    public static final int NOTIFY_FAILURE = 0;
@@ -42,12 +37,15 @@ public class Constants {
 
         public static final int SOCKET =0;//socket标识
 
+		public static final String CUSTOMER_SESSION_PRE =  "CSESSION";
     }
 
     public static interface SessionConfig{
     	 public static final String SESSION_KEY= "account" ;
     	 public static final AttributeKey<String> SERVER_SESSION_ID = AttributeKey.valueOf(SESSION_KEY);
     	 public static final AttributeKey SERVER_SESSION_HEARBEAT = AttributeKey.valueOf("heartbeat");
+		public static final String SESSION_FROM = "sessionFrom";
+		public static final AttributeKey<String> ATTR_SESSION_FROM = AttributeKey.valueOf(SESSION_FROM);
     }
 
     public static interface ProtobufType{
