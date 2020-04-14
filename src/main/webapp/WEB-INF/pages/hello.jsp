@@ -29,13 +29,25 @@
     var socket;
 
     var showOfflineMsg = function () {
+        console.log(token);
         $.ajax({
             type: "post",
             url: "hisMessage",
             async: true,
-            success: function (data) {
+            data: {sessionId: token},
+            success: function(data){
                 console.log("showOfflineMsg" + data);
-                console.log(data);
+                console.log(data.length);
+                var rt = document.getElementById("response");
+                rt.value = "" ;
+                for(var i = 0; i < data.length; i++){
+                    if(data[i].sender = token){
+                        rt.value = rt.value + "我:  " +data[i].content + "\n";
+                    }else{
+                        rt.value = rt.value + data[i].sender + ":   " + data[i].content + "\n";
+                    }
+
+                }
                 // var dataObj = eval("(" + data + ")");
                 // if (dataObj != null && dataObj.length > 0) {
                 //     var result = "";
@@ -63,6 +75,7 @@
         message.setMsgtype(4);
         message.setCmd(5);
         message.setToken(token);
+        message.setUtype(1);
         message.setSender(token);
         console.log("receiver is " + receiverId);
         message.setReceiver(receiverId);//机器人ID默认为0
@@ -71,13 +84,14 @@
         message.setContent(content.serializeBinary())
         console.log(message);
         socket.send(message.serializeBinary());
-
+        var rt = document.getElementById("response");
+        rt.value = rt.value + "\n" + "我:   " + content;
         document.getElementsByName('message')[0].value = '';
     }
 
     function init() {
         if (window.WebSocket) {
-            socket = new WebSocket("ws://localhost:8040/");
+            socket = new WebSocket("ws://192.168.1.204:8040/");
             socket.binaryType = "arraybuffer";
             //接受服务器消息
             socket.onmessage = function (ex) {
@@ -97,11 +111,13 @@
                         socket.send(message1.serializeBinary());
                     }  else if (msg.getCmd() == 4) {
 
+                        console.log("系统终止连接，请重连");
                     } else if (msg.getCmd() == 5) {
+                        var sender = msg.getSender();
                         var msgCon = proto.MessageBody.deserializeBinary(msg.getContent());
                         var content = msgCon.getContent();
                         var rt = document.getElementById("response");
-                        rt.value = rt.value + "\n" + content;
+                        rt.value = rt.value + "\n" + sender + ":   " + content;
                     } else if (msg.getCmd() == 6) {//reconn
 
                     }
@@ -132,12 +148,12 @@
                 var rt = document.getElementById("response");
                 rt.value = rt.value + "\n" + "连接断开";
                 console.log("onclose");
-                reconnect(websocketurl, init);
+                // reconnect(websocketurl, init);
             }
             socket.onerror = function () {
                 // layer.msg("服务器连接出错，请检查websocketconfig.js里面的IP地址");
                 console.log("onerror");
-                reconnect(websocketurl, init);
+                // reconnect(websocketurl, init);
             };
         } else {
             alert("浏览器不支持websocket")

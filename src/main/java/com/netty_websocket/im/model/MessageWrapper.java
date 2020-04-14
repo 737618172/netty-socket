@@ -41,6 +41,10 @@ public class MessageWrapper implements Serializable {
         return MessageProtocol.HEART_BEAT.equals(this.protocol);
     }
 
+    public boolean isReconnect() {
+        return MessageProtocol.RECON.equals(this.protocol);
+    }
+
     public boolean isSend() {
         return MessageProtocol.SEND.equals(this.protocol);
     }

@@ -18,9 +18,9 @@ import java.util.concurrent.TimeUnit;
 
 @Service
 public class ImConnertorImpl implements ImConnertor {
-	private final static Logger log = LoggerFactory.getLogger(ImConnertorImpl.class);
+    private final static Logger log = LoggerFactory.getLogger(ImConnertorImpl.class);
 
-	@Autowired
+    @Autowired
     private SessionManagerImpl sessionManager;
 
     @Autowired
@@ -29,19 +29,19 @@ public class ImConnertorImpl implements ImConnertor {
     @Autowired
     private RedisTemplate redisTemplate;
 
-	@Override
-	public void heartbeatToClient(ChannelHandlerContext hander, MessageWrapper wrapper) {
-		//设置心跳响应时间
-		hander.channel().attr(Constants.SessionConfig.SERVER_SESSION_HEARBEAT).set(System.currentTimeMillis());
-	}
+    @Override
+    public void heartbeatToClient(ChannelHandlerContext hander, MessageWrapper wrapper) {
+        //设置心跳响应时间
+        hander.channel().attr(Constants.SessionConfig.SERVER_SESSION_HEARBEAT).set(System.currentTimeMillis());
+    }
 
-	@Override
-	public void pushMessage(MessageWrapper wrapper) throws RuntimeException {
+    @Override
+    public void pushMessage(MessageWrapper wrapper) throws RuntimeException {
         try {
             ///取得接收人 给接收人写入消息
             MessageProto.Model body = (MessageProto.Model) wrapper.getBody();
             int utype = body.getUtype();
-            Session responseSession = sessionManager.getSession(wrapper.getReSessionId(),utype);
+            Session responseSession = sessionManager.getSession(wrapper.getReSessionId(),utype == 1 ? 2:1);
             if (responseSession != null ) {
                 boolean result = responseSession.write(wrapper.getBody());
                 if(result){
@@ -61,70 +61,70 @@ public class ImConnertorImpl implements ImConnertor {
     }
 
 
-	@Override
-	public void pushMessage(String sessionId,MessageWrapper wrapper) throws RuntimeException{
-		//判断是不是无效用户回复
+    @Override
+    public void pushMessage(String sessionId,MessageWrapper wrapper) throws RuntimeException{
+        //判断是不是无效用户回复
 //		if(!sessionId.equals(Constants.ImserverConfig.REBOT_SESSIONID)){//判断非机器人回复时验证
 //			Session session = sessionManager.getSession(sessionId);
 //	        if (session == null) {
 //	        	 throw new RuntimeException(String.format("session %s is not exist.", sessionId));
 //	        }
 //		}
-//	   try {
-//	    	///取得接收人 给接收人写入消息
-//	    	Session responseSession = sessionManager.getSession(wrapper.getReSessionId());
-//	  		if (responseSession != null ) {
-//	  			boolean result = responseSession.write(wrapper.getBody());
-//	  			if(result){
-//	  				proxy.saveOnlineMessageToDB(wrapper);
-//	  			}else{
-//	  				proxy.saveOfflineMessageToDB(wrapper);
-//	  			}
-//	  			return;
-//	  		}else{
-//	  			proxy.saveOfflineMessageToDB(wrapper);
-//	  		}
-//	    } catch (Exception e) {
-//	    	log.error("connector send occur PushException.", e);
-//
-//	        throw new RuntimeException(e.getCause());
-//	    }
+        try {
+            MessageProto.Model body = (MessageProto.Model) wrapper.getBody();
+            int utype = body.getUtype();
+            ///取得接收人 给接收人写入消息
+            Session responseSession = sessionManager.getSession(wrapper.getReSessionId(),utype);
+            if (responseSession != null ) {
+                boolean result = responseSession.write(wrapper.getBody());
+                if(result){
+                    proxy.saveOnlineMessageToDB(wrapper);
+                }else{
+                    proxy.saveOfflineMessageToDB(wrapper);
+                }
+                return;
+            }else{
+                proxy.saveOfflineMessageToDB(wrapper);
+            }
+        } catch (Exception e) {
+            log.error("connector send occur PushException.", e);
 
-	}
+            throw new RuntimeException(e.getCause());
+        }
+
+    }
 
     @Override
     public void connect(ChannelHandlerContext ctx, MessageWrapper wrapper) {
         try {
-        	  String sessionId = wrapper.getSessionId();
+            String sessionId = wrapper.getSessionId();
             MessageProto.Model  msg =  (MessageProto.Model)wrapper.getBody();
-//        	  String channelSession = getChannelSessionId(ctx);
             int utype = msg.getUtype();
             Session session = null;
             if(1 == utype){
                 session = (Session) redisTemplate.opsForValue().get(Constants.ImserverConfig.CUSTOMER_SESSION_PRE + sessionId);
             }else if(2 == utype){
-//                session = (Session) redisTemplate.opsForHash().get("1089server", sessionId);
                 session = sessionManager.getSession(sessionId,utype);
             }
 
             //当sessionID存在或者相等  视为同一用户重新连接
-              if (null != session) {
-                  Session session1 = sessionManager.switchSession(session, ctx,wrapper);
-                  log.info("connector reconnect sessionId -> " + sessionId + ", ctx -> " + ctx.toString());
-                  pushMessage(proxy.getReConnectionStateMsg(session1.getAccount()));
-              } else {
-                  log.info("connector connect sessionId -> " + sessionId +  ", ctx -> " + ctx.toString());
-                  sessionManager.createSession(wrapper, ctx);
-                  setChannelSessionId(ctx, sessionId,utype);
-                  log.info("create channel attr sessionId " + sessionId + " successful, ctx -> " + ctx.toString());
-              }
+            if (null != session) {
+                Session session1 = sessionManager.switchSession(session, ctx,wrapper);
+                log.info("connector reconnect sessionId -> " + sessionId + ", ctx -> " + ctx.toString());
+                pushMessage(session1.getAccount(),proxy.getReConnectionStateMsg(session1.getAccount()));
+            } else {
+                log.info("connector connect sessionId -> " + sessionId +  ", ctx -> " + ctx.toString());
+                sessionManager.createSession(wrapper, ctx);
+                setChannelSessionId(ctx, sessionId,utype);
+                log.info("create channel attr sessionId " + sessionId + " successful, ctx -> " + ctx.toString());
+            }
 
         } catch (Exception e) {
-        	log.error("connector connect  Exception.", e);
+            log.error("connector connect  Exception.", e);
         }
     }
 
-	@Override
+    @Override
     public String[] getChannelSessionId(ChannelHandlerContext ctx) {
         String sessionId = ctx.channel().attr(Constants.SessionConfig.SERVER_SESSION_ID).get();
         String from = ctx.channel().attr(Constants.SessionConfig.ATTR_SESSION_FROM).get();

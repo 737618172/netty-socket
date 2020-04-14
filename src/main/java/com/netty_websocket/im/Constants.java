@@ -22,7 +22,7 @@ public class Constants {
     	//连接空闲时间
       	public static final int READ_IDLE_TIME = 30;//秒
       	//发送心跳包循环时间
-      	public static final int WRITE_IDLE_TIME = 20;//秒
+      	public static final int WRITE_IDLE_TIME = 25;//秒
         //心跳响应 超时时间
       	public static final int PING_TIME_OUT = 70; //秒   需大于空闲时间
 

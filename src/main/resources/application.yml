@@ -6,7 +6,7 @@ spring:
     port: 6379
     password: myredis
   datasource:
-    url: jdbc:mysql://106.54.108.197:5186/im?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Hongkong
+    url: jdbc:mysql://106.54.108.197:5186/im?useSSL=false&serverTimezone=Hongkong
     username: root
     password: root
     driver-class-name: com.mysql.cj.jdbc.Driver

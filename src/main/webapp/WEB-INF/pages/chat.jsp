@@ -490,6 +490,7 @@
                 message.setMsgtype(4);
                 message.setCmd(5);
                 message.setToken(currentsession);
+                message.setUtype(2);
                 message.setSender(currentsession);
                 message.setReceiver(reuser);//机器人ID默认为0
                 content.setContent(msg);
@@ -556,7 +557,7 @@
             var socket;
             var customers = [];
             if (window.WebSocket) {
-                socket = new WebSocket("ws://localhost:8040/");
+                socket = new WebSocket("ws://192.168.1.204:8040/");
                 socket.binaryType = "arraybuffer";
                 //收到消息后
                 socket.onmessage = function (event) {
@@ -566,6 +567,8 @@
                         //心跳消息
                         if (msg.getCmd() == 1) {
                             var msgCon = proto.MessageBody.deserializeBinary(msg.getContent());
+                            console.log(msg);
+                            console.log(msgCon);
                             customers.push(msg.getSender());
                             var existsUser = $("li[title='" + msg.getSender() + "']").html();
                             if (existsUser == undefined) {
@@ -636,13 +639,13 @@
                 //连接关闭
                 socket.onclose = function (event) {
                     layer.confirm('您已下线，重新上线?', function (index) {
-                        reconnect(websocketurl, initEventHandle);
+                        // reconnect(websocketurl, initEventHandle);
                         layer.close(index);
                     });
                 };
                 socket.onerror = function () {
                     layer.msg("服务器连接出错，请检查websocketconfig.js里面的IP地址");
-                    reconnect(websocketurl, initEventHandle);
+                    // reconnect(websocketurl, initEventHandle);
                 };
             }
 

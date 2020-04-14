@@ -35,11 +35,13 @@ public class RequestController {
         ModelAndView modelAndView = new ModelAndView();
         Cookie[] cookies = request.getCookies();
         boolean flag = false;
-        for(Cookie c:cookies){
-            if("token".equals(c.getName())){
-                flag = true;
-                c.setMaxAge(24 * 60 * 60 * 3);
-                break;
+        if(null != cookies){
+            for(Cookie c:cookies){
+                if("token".equals(c.getName())){
+                    flag = true;
+                    c.setMaxAge(24 * 60 * 60 * 3);
+                    break;
+                }
             }
         }
         if(!flag){

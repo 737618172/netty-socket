@@ -102,6 +102,7 @@ public class MessageProxyImpl implements MessageProxy {
         result.setTimeStamp(DateFormatUtils.format(new Date(), "yyyy-MM-dd HH:mm:ss"));
         result.setSender(cusSessionId);//存入发送人sessionId
         result.setCmd(Constants.CmdType.BIND);
+        result.setUtype(2);
 
         MessageBodyProto.MessageBody.Builder  msgbody =  MessageBodyProto.MessageBody.newBuilder();
         msgbody.setContent("客户"+cusSessionId+"已连接");
@@ -116,7 +117,7 @@ public class MessageProxyImpl implements MessageProxy {
         result.setTimeStamp(DateFormatUtils.format(new Date(), "yyyy-MM-dd HH:mm:ss"));
         result.setSender(serSessionId);//存入发送人sessionId
         result.setCmd(Constants.CmdType.BIND);
-
+        result.setUtype(1);
         MessageBodyProto.MessageBody.Builder  msgbody =  MessageBodyProto.MessageBody.newBuilder();
         msgbody.setContent("客服"+ serSessionId + "为您服务");
         result.setContent(msgbody.build().toByteString());
@@ -125,14 +126,18 @@ public class MessageProxyImpl implements MessageProxy {
 
     @Override
     public void saveOnlineMessageToDB(MessageWrapper message) {
-        MessageEntity messageEntity = convertMessageWrapperToBean(message,1);
-        messageRepository.save(messageEntity);
+        if(message.isReply() || message.isSend()){
+            MessageEntity messageEntity = convertMessageWrapperToBean(message,1);
+            messageRepository.save(messageEntity);
+        }
     }
 
     @Override
     public void saveOfflineMessageToDB(MessageWrapper message) {
-        MessageEntity messageEntity = convertMessageWrapperToBean(message,0);
-        messageRepository.save(messageEntity);
+        if(message.isReply() || message.isSend()){
+            MessageEntity messageEntity = convertMessageWrapperToBean(message,0);
+            messageRepository.save(messageEntity);
+        }
     }
 
     private MessageEntity convertMessageWrapperToBean(MessageWrapper message,Integer isRead){
