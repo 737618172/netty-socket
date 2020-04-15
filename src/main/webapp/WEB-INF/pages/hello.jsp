@@ -126,22 +126,26 @@
             socket.onopen = function (ex) {
                 var rt = document.getElementById("response");
                 rt.value = rt.value + "\n" + "连接开启";
-                var message = new proto.Model();
+                // var message = new proto.Model();
+                var message = new Object();
                 var browser = BrowserUtil.info();
-                message.setVersion("1.0");
-                message.setDeviceid("");
-                message.setCmd(3);
-                message.setSender(token);
-                message.setMsgtype(1);
-                message.setFlag(1);
-                message.setPlatform(browser.name);
-                message.setPlatformversion(browser.version);
-                message.setToken(token);
-                message.setUtype(1);
-                var bytes = message.serializeBinary();
-                console.log(bytes);
-                socket.send(bytes);
-                showOfflineMsg();
+                message.version = "1.0";
+                message.cmd = 1;
+                message.uType = 1;
+                // message.setVersion("1.0");
+                // message.setDeviceid("");
+                // message.setCmd(3);
+                // message.setSender(token);
+                // message.setMsgtype(1);
+                // message.setFlag(1);
+                // message.setPlatform(browser.name);
+                // message.setPlatformversion(browser.version);
+                // message.setToken(token);
+                // message.setUtype(1);
+                // var bytes = message.serializeBinary();
+                console.log(message);
+                socket.send(message);
+                // showOfflineMsg();
             }
 
             socket.onclose = function (ex) {

@@ -3,7 +3,7 @@ package com.netty_websocket.im.service;
 import com.netty_websocket.im.model.MessageWrapper;
 import io.netty.channel.ChannelHandlerContext;
 
-public interface ImConnertor {
+public interface ImConnector {
 	 /**
 	  * 发送心跳检测 到客户端
 	  * @param hander

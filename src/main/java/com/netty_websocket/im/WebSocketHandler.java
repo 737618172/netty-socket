@@ -1,15 +1,15 @@
 package com.netty_websocket.im;
 
 import com.netty_websocket.im.model.MessageProto;
-import com.netty_websocket.im.model.MessageWrapper;
-import com.netty_websocket.im.model.Session;
-import com.netty_websocket.im.service.ImConnertor;
+import com.netty_websocket.im.service.ImConnector;
 import com.netty_websocket.im.service.MessageProxy;
+import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.channel.group.ChannelGroup;
 import io.netty.channel.group.DefaultChannelGroup;
 import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
+import io.netty.handler.codec.http.websocketx.WebSocketFrame;
 import io.netty.handler.timeout.IdleState;
 import io.netty.handler.timeout.IdleStateEvent;
 import io.netty.util.concurrent.ImmediateEventExecutor;
@@ -17,26 +17,23 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 
-import java.util.Comparator;
-import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Collectors;
 
 //public class WebSocketHandler extends SimpleChannelInboundHandler<TextWebSocketFrame> {
 
 @Component
 @Slf4j
-public class WebSocketHandler extends SimpleChannelInboundHandler<MessageProto.Model> {
+public class WebSocketHandler extends SimpleChannelInboundHandler<WebSocketFrame> {
     public static ChannelGroup channelGroup = new DefaultChannelGroup(ImmediateEventExecutor.INSTANCE);
 
     public static ConcurrentHashMap<String,Object> USER_CLIENT = new ConcurrentHashMap<>();
 
     private MessageProxy messageProxy;
-    private ImConnertor connertor;
+    private ImConnector connector;
 
-    public WebSocketHandler(MessageProxy messageProxy, ImConnertor connertor){
+    public WebSocketHandler(MessageProxy messageProxy, ImConnector connertor){
         this.messageProxy = messageProxy;
-        this.connertor = connertor;
+        this.connector = connector;
     }
 
     @Override
@@ -88,7 +85,7 @@ public class WebSocketHandler extends SimpleChannelInboundHandler<MessageProto.M
             log.debug(IdleState.READER_IDLE +"... from "+sessionId+" nid:" +ctx.channel().id().asShortText());
             Long lastTime = (Long) ctx.channel().attr(Constants.SessionConfig.SERVER_SESSION_HEARBEAT).get();
             if(lastTime == null || ((System.currentTimeMillis() - lastTime)/1000>= Constants.ImserverConfig.PING_TIME_OUT)){
-                connertor.close(ctx);
+                connector.close(ctx);
             }
             //ctx.channel().attr(Constants.SessionConfig.SERVER_SESSION_HEARBEAT).set(null);
         }
@@ -96,22 +93,27 @@ public class WebSocketHandler extends SimpleChannelInboundHandler<MessageProto.M
 
     @Override
 //    protected void channelRead0(ChannelHandlerContext ctx, TextWebSocketFrame msg) throws Exception {
-    protected void channelRead0(ChannelHandlerContext ctx, MessageProto.Model msg) throws Exception {
-
-        String sessionId = msg.getToken();
-//        String sessionId = ctx.channel().attr(Constants.SessionConfig.SERVER_SESSION_ID).get();
-        MessageWrapper messageWrapper = messageProxy.convertToMessageWrapper(sessionId, msg);
-
-        if(messageWrapper.isOnline()){
-            connertor.connect(ctx,messageWrapper);
-        }else if(messageWrapper.isClose()){
-            connertor.close(ctx);
-        }else if(messageWrapper.isSend()){
-            connertor.pushMessage(messageWrapper);
-        }else if(messageWrapper.isHeartbeat()){
-            connertor.heartbeatToClient(ctx,messageWrapper);
-        }else if(messageWrapper.isReply()){
-            connertor.pushMessage(messageWrapper);
-        }
+    protected void channelRead0(ChannelHandlerContext ctx, WebSocketFrame msg) throws Exception {
+        System.out.println(msg);
+        ByteBuf content = msg.content();
+        byte[] array = content.array();
+        byte[] b = new byte[array.length];
+        new String(b,0,b.)
+        System.out.println(content.toString());
+//        String sessionId = msg.getToken();
+////        String sessionId = ctx.channel().attr(Constants.SessionConfig.SERVER_SESSION_ID).get();
+//        MessageWrapper messageWrapper = messageProxy.convertToMessageWrapper(sessionId, msg);
+//
+//        if(messageWrapper.isOnline()){
+//            connertor.connect(ctx,messageWrapper);
+//        }else if(messageWrapper.isClose()){
+//            connertor.close(ctx);
+//        }else if(messageWrapper.isSend()){
+//            connertor.pushMessage(messageWrapper);
+//        }else if(messageWrapper.isHeartbeat()){
+//            connertor.heartbeatToClient(ctx,messageWrapper);
+//        }else if(messageWrapper.isReply()){
+//            connertor.pushMessage(messageWrapper);
+//        }
     }
 }

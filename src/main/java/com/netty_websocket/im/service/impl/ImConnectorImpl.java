@@ -3,7 +3,7 @@ package com.netty_websocket.im.service.impl;
 import com.netty_websocket.im.Constants;
 import com.netty_websocket.im.model.MessageProto;
 import com.netty_websocket.im.model.MessageWrapper;
-import com.netty_websocket.im.service.ImConnertor;
+import com.netty_websocket.im.service.ImConnector;
 import com.netty_websocket.im.service.MessageProxy;
 import com.netty_websocket.im.model.Session;
 import io.netty.channel.ChannelHandlerContext;
@@ -17,8 +17,8 @@ import org.springframework.stereotype.Service;
 import java.util.concurrent.TimeUnit;
 
 @Service
-public class ImConnertorImpl implements ImConnertor {
-    private final static Logger log = LoggerFactory.getLogger(ImConnertorImpl.class);
+public class ImConnectorImpl implements ImConnector {
+    private final static Logger log = LoggerFactory.getLogger(ImConnectorImpl.class);
 
     @Autowired
     private SessionManagerImpl sessionManager;

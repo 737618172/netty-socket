@@ -1,6 +1,6 @@
 package com.netty_websocket.im;
 
-import com.netty_websocket.im.service.ImConnertor;
+import com.netty_websocket.im.service.ImConnector;
 import com.netty_websocket.im.service.MessageProxy;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelFuture;
@@ -18,7 +18,7 @@ public class NettyWebSocketServer {
     private MessageProxy messageProxy;
 
     @Autowired
-    private ImConnertor connertor;
+    private ImConnector connector;
 
     public  void run() {
         EventLoopGroup bossGroup = null;
@@ -30,7 +30,7 @@ public class NettyWebSocketServer {
             boot.group(bossGroup, workerGroup)
                     .channel(NioServerSocketChannel.class)
                     .option(ChannelOption.SO_BACKLOG, 128)
-                    .childHandler(new SocketChannelInitializer(messageProxy,connertor));
+                    .childHandler(new SocketChannelInitializer(messageProxy,connector));
 
             System.out.println("服务器启动");
             // start
